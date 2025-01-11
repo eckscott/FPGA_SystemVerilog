@@ -17,7 +17,10 @@ def main():
     tester = test_suite_320.build_test_suite_320("lab03", start_date="01/27/2025")
     tester.add_required_tracked_files(["pre-synth-schematic.png", "sim_logic.tcl", 
         "sim_logic.png", "post-synth-schematic.png", "implementation.png"])
-    tester.add_Makefile_rule("sim_tb")
+    tester.add_required_tracked_files(["pre-synth-schematic.png", "sim_logic.tcl", 
+        "sim_logic.png", "post-synth-schematic.png", "implementation.png"])
+    tester.add_Makefile_rule("sim_tb", [], ["testbench.log"])
+    tester.add_build_test(repo_test.file_regex_check("testbench.log", "ERROR", "testbench test"))
     tester.add_Makefile_rule("synth_logic", ["synth_logic.tcl"],
         ["synth_logic.log", "logic_functions_synth.dcp"])
     tester.add_Makefile_rule("implement_logic", ["implement_logic.tcl"], 

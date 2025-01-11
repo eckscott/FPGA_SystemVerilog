@@ -18,6 +18,7 @@ import threading
 import queue
 import pathlib
 import shutil
+import re
 
 ##########################################################
 # Useful static functions for manipulating and querying git repos
@@ -313,6 +314,47 @@ class file_exists_test(repo_test):
                         repo_test_suite.print_error(f'Error copying file {orig_filename} to {new_file_path}: {e}')
         if return_val:
             return self.success_result()
+        return self.error_result()
+
+class file_regex_check(repo_test):
+    ''' Checks to see if a given file has a given regular expression match.
+    '''
+
+    def __init__(self, filename, regex_str, 
+                 module_name = None, error_msg = None, 
+                 error_on_match = True, abort_on_error=True):
+        ''' filename: name of file to check
+         regex_str: regular expression string to match
+         error_on_match: if True, an error will be thrown if the regex does match, 
+            otherwise an error is thrown if the regex does not match
+        module_name: name to print for module (to override default)
+            '''
+        super().__init__(abort_on_error)
+        self.filename = filename
+        self.regex_str = regex_str
+        self.error_on_match = error_on_match
+        self.module_name_str = module_name
+        self.error_msg = error_msg
+
+    def module_name(self):
+        if self.module_name_str is not None:
+            return self.module_name_str
+        return f"File Regex Check: {self.filename} - {self.regex_str} - Error on match: {self.error_on_match}"
+ 
+    def perform_test(self, repo_test_suite):
+        file_path = repo_test_suite.working_path / self.filename
+        if not os.path.exists(file_path):
+            repo_test_suite.print_error(f'File does not exist: {file_path}')
+            return_val = False
+        # Check to see if there is a match
+        regex_match = False
+        with open(file_path, 'r') as file:
+            file_contents = file.read()
+            regex_match = re.search(self.regex_str, file_contents)
+        if regex_match and not self.error_on_match or not regex_match and self.error_on_match:
+            return self.success_result()
+        if self.error_msg is not None:
+            repo_test_suite.print_error(self.error_msg)
         return self.error_result()
 
 class file_not_tracked_test(repo_test):
