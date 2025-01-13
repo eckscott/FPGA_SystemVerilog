@@ -15,7 +15,7 @@ import repo_test
 def main():
     # Check on vivado
     tester = test_suite_320.build_test_suite_320("lab04", start_date="02/03/2025")
-    tester.add_required_tracked_files(["pre-schematic.png", "sim_logic.tcl", "sim_logic.png", "post-schematic.png", "implementation.png"])
+    tester.add_required_tracked_files(["sim_logic.tcl", "sim_logic.png", "hierarchy.png", "post-schematic.png", "implementation.png"])
     tester.add_Makefile_rule("synth_logic", ["synth_logic.tcl"], ["synth_logic.log", "logic_functions_synth.dcp"])
     tester.add_Makefile_rule("implement_logic", ["implement_logic.tcl"], ["implement_logic.log", "logic_functions.bit", 
                                                                           "logic_functions.dcp", "utilization.rpt"])
