@@ -18,6 +18,7 @@ def main():
     tester.add_required_tracked_files(["sim_FullAdd.tcl", "sim_Add8.tcl", "hierarchy.png", 
                                        "post-schematic.png"])
     tester.add_Makefile_rule("sim_testbench", [], ["testbench.log"])
+    tester.add_build_test(repo_test.file_regex_check("testbench.log", "ERROR:", "Testbench Test"))
     tester.add_Makefile_rule("synth", [], ["synthesis.log", "arithmetic_top_synth.dcp"])
     tester.add_Makefile_rule("implement", [], ["implement.log", "arithmetic_top.bit", 
                                             "arithmetic_top.dcp", "utilization.rpt"])
