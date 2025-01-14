@@ -16,7 +16,7 @@ def main():
     # Check on vivado
     tester = test_suite_320.build_test_suite_320("lab04", start_date="02/03/2025")
     tester.add_required_tracked_files(["sim_FullAdd.tcl", "sim_Add8.tcl", "hierarchy.png", 
-                                       "post-schematic.png", "implementation.png"])
+                                       "post-schematic.png"])
     tester.add_Makefile_rule("sim_testbench", [], ["testbench.log"])
     tester.add_Makefile_rule("synth", [], ["synthesis.log", "arithmetic_top_synth.dcp"])
     tester.add_Makefile_rule("implement", [], ["implement.log", "arithmetic_top.bit", 
