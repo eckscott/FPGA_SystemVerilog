@@ -68,7 +68,10 @@ module tb_arithmetic();
 				errors = errors + 1;
 			end
 			else begin
-				$display("Success: A=%b,B=%b and A+B=%b overflow=%b at time %t", A,B,led[7:0],led[8], $time);
+			    if (!btnc)
+					$display("Success: A=%b,B=%b and A+B=%b overflow=%b at time %t", A,B,led[7:0],led[8], $time);
+				else
+					$display("Success: A=%b,B=%b and A-B=%b overflow=%b at time %t", A,B,led[7:0],led[8], $time);
 			end
 		end
 
