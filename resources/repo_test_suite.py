@@ -84,10 +84,13 @@ class repo_test_suite():
 
     def print_color(self, color, *msg):
         """ Print a message in color """
-        print(color + " ".join(str(item) for item in msg), TermColor.END)
+        msg_str = " ".join(str(item) for item in msg)
         if self.test_log_fp is not None:
-            # Don't print color codes to the log file
-            self.test_log_fp.write(" ".join(str(item) for item in msg) + "\n")
+            # Don't print color codes to the log file, just plain message
+            self.test_log_fp.write(msg_str + "\n")
+        if color is not None:
+            msg_str = color + msg_str + TermColor.END
+        print(msg_str)
 
     def print(self, message, verbose_message = False):
         """ Prints a string to the appropriate locations. """

@@ -273,6 +273,7 @@ def build_test_suite_320(assignment_name, max_repo_files = 20, start_date = None
     parser.add_argument("--norepo", action="store_true", help="Do not run Repo tests")
     parser.add_argument("--nobuild", action="store_true", help="Do not run build tests")
     parser.add_argument("--noclean", action="store_true", help="Do not run clean tests")
+    parser.add_argument("--nocolor", action="store_true", help="Remove color tags from output")
     parser.add_argument("--log", type=str, help="Save output to a log file (relative file path)")
     parser.add_argument("--starterbranch", type=str, default = "main", help="Branch for starter code to check")
     parser.add_argument("--copy", type=str, help="Copy generated files to a directory")
@@ -304,6 +305,10 @@ def build_test_suite_320(assignment_name, max_repo_files = 20, start_date = None
         test_suite.run_build_tests = False
     if args.noclean:
         test_suite.run_clean_tests = False
+    if args.nocolor:
+        test_suite.test_color = None
+        test_suite.error_color = None
+
     # See if a copy of the build files are needed and if so, customize the copy
     if args.copy:
         test_suite.copy_file_dir = args.copy
