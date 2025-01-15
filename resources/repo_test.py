@@ -345,7 +345,7 @@ class file_regex_check(repo_test):
         file_path = repo_test_suite.working_path / self.filename
         if not os.path.exists(file_path):
             repo_test_suite.print_error(f'File does not exist: {file_path}')
-            return_val = False
+            return self.error_result()
         # Check to see if there is a match
         regex_match = False
         with open(file_path, 'r') as file:

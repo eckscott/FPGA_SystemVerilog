@@ -18,7 +18,7 @@ def main():
     tester.add_required_tracked_files(["seven_segment.sv", "sevent_segment_top.sv", "sim_seven_segment_top.png", 
                                        "segment_lut.png"])
     tester.add_Makefile_rule("sim_sevensegment", ["seven_segment.sv"], ["sim_sevensegment.log"])
-    tester.add_build_test(repo_test.file_regex_check("sim_sevensegment.log", "*** Error", "Testbench Log Test"))
+    tester.add_build_test(repo_test.file_regex_check("sim_sevensegment.log", "\*\*\* Error", "Testbench Log Test"))
     tester.add_Makefile_rule("synth", [], ["synthesis.log", "seven_segment_synth.dcp"])
     tester.add_Makefile_rule("implement", ["sevent_segment_synth.dcp"], ["implement.log", "seven_segment.bit", 
                                             "seven_segment.dcp", "utilization.rpt"])
