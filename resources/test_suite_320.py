@@ -3,7 +3,6 @@
 import argparse
 import os
 import git
-import subprocess
 import time
 
 import repo_test
@@ -15,21 +14,11 @@ from repo_test_suite import repo_test_suite
 #   - Fix up the error reporting (return error object instead of printing)
 #   - Provide a link to the web page for instructions on how to address this problem
 #   - Check to see if the student has changed the starter code locally
-#   - Provide a way for having the simulation environment return an error when the testbench fails (lab 2)
 #   - For uncommitted files, should we only check for the current directory or the entire repo?
-# - tag flag
-#   - The tag flag is used to checkout a specific tag before running the script. This is used to check out the code at the time of submission and run
-#     It is different from the submit flag in that it does not actually tag the repository. Used for grading and checking code without resubmitting.
-#   - Have the script return the checkout to main when done (or cache the current branch and return to current branch)
-# - Submit Flag
-#   - Other:
-#     - Add ability to checkout entire repository to a temporary directory and run the script on that directory rather than the local directory
 
 # Script changes:
 # * flag to do a remote check like the TAs would do (default is local)
-# * A step that sees if the starter code was updated as of the day the lab started
 # * Flag to copy intermediate files during build before the clean occurs
-# * Instructions on the passoff script
 
 class test_suite_320(repo_test_suite):
     ''' 
