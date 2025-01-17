@@ -60,7 +60,7 @@ module tb_arithmetic();
 			     overflow = (A[7] & ~B[7] & ~result[7]) | (~A[7] & B[7] & result[7]); // overflow for subtraction must use the sign of flipped B
               end
 
-			if (result != led[7:0] || led[8] != overflow) begin
+			if (result !== led[7:0] || led[8] !== overflow) begin
 			    if (!btnc)
 				    $display("Error: A=%b,B=%b and A+B=%b overflow=%b but expecting %b overflow=%b at time %t", A,B,led[7:0],led[8],result,overflow, $time);
 				else
