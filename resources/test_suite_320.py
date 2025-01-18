@@ -97,7 +97,9 @@ class test_suite_320(repo_test_suite):
         ''' Add a makefile rule test '''
         make_test = repo_test.make_test(make_rule, required_input_files = required_input_files, 
                                         required_build_files = required_build_files,
-                                        timeout_seconds=timeout_seconds)
+                                        timeout_seconds=timeout_seconds,
+                                        copy_build_files_dir = self.copy_file_dir,
+                                        copy_prefice_str = self.prepend_file_str)
         self.add_build_test(make_test)
 
     def add_required_files(self, file_list, check_files_not_tracked = False, check_tracked_files = False):
@@ -105,7 +107,8 @@ class test_suite_320(repo_test_suite):
         Optionally check to make sure it is not committed in the repo (for build files)
         optionally check to make sure it is committed in the repo (for required files) '''
         # Add test to see if the file was generated (in the current working directory)
-        check_file_test = repo_test.file_exists_test(file_list, copy_dir = self.copy_file_dir, prepend_file_str = self.prepend_file_str)
+        #check_file_test = repo_test.file_exists_test(file_list, copy_dir = self.copy_file_dir, prepend_file_str = self.prepend_file_str)
+        check_file_test = repo_test.file_exists_test(file_list)   # Commented out copying. No need to copy existing files, only need to copy built files
         self.add_post_build_test(check_file_test)
         # Add test to make sure the file is not committed in the repository
         if check_files_not_tracked:

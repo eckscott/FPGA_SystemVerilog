@@ -92,6 +92,9 @@ class repo_test_suite():
             msg_str = color + msg_str + TermColor.END
         print(msg_str)
 
+    def print_verbose(self, message):
+        self.print(message, verbose_message = True)
+
     def print(self, message, verbose_message = False):
         """ Prints a string to the appropriate locations. """
         # Print to std_out?
