@@ -132,8 +132,8 @@ class repo_test_suite():
         self.print_test_status(f"Running test \'{self.test_name}\'")
         self.print_test_status("")
 
-    def print_test_end_message(self):
-        self.print_test_status(f"Test completed \'{self.test_name}\'")
+    def print_test_summary(self):
+        ''' Print a summary of the test results '''
         warnings = []
         errors = []
         success = []
@@ -156,7 +156,6 @@ class repo_test_suite():
                 self.print_error(f" {len(errors)} Errors")
                 for error in errors:
                     self.print_error(f"  {error.test.module_name()}")
-
 
     def iterate_through_tests(self, list_of_tests, start_step = 1):
         ''' Run list of tests. Return True if all tests pass, False otherwise '''
