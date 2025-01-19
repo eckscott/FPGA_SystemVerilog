@@ -84,10 +84,16 @@ class repo_test_suite():
 
     def print_color(self, color, *msg):
         """ Print a message in color """
-        print(color + " ".join(str(item) for item in msg), TermColor.END)
+        msg_str = " ".join(str(item) for item in msg)
         if self.test_log_fp is not None:
-            # Don't print color codes to the log file
-            self.test_log_fp.write(" ".join(str(item) for item in msg) + "\n")
+            # Don't print color codes to the log file, just plain message
+            self.test_log_fp.write(msg_str + "\n")
+        if color is not None:
+            msg_str = color + msg_str + TermColor.END
+        print(msg_str)
+
+    def print_verbose(self, message):
+        self.print(message, verbose_message = True)
 
     def print(self, message, verbose_message = False):
         """ Prints a string to the appropriate locations. """
@@ -126,8 +132,8 @@ class repo_test_suite():
         self.print_test_status(f"Running test \'{self.test_name}\'")
         self.print_test_status("")
 
-    def print_test_end_message(self):
-        self.print_test_status(f"Test completed \'{self.test_name}\'")
+    def print_test_summary(self):
+        ''' Print a summary of the test results '''
         warnings = []
         errors = []
         success = []
@@ -150,7 +156,6 @@ class repo_test_suite():
                 self.print_error(f" {len(errors)} Errors")
                 for error in errors:
                     self.print_error(f"  {error.test.module_name()}")
-
 
     def iterate_through_tests(self, list_of_tests, start_step = 1):
         ''' Run list of tests. Return True if all tests pass, False otherwise '''

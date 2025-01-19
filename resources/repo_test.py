@@ -292,7 +292,6 @@ class file_exists_test(repo_test):
             if not os.path.exists(self.copy_dir):
                 repo_test_suite.print_error(f'Copy directory does not exist: {self.copy_dir}')
             else:
-                print(f'Copying files to {self.copy_dir}')
                 for orig_filepath in existing_files:
                     orig_filename = orig_filepath.name
                     if self.prepend_file_str is not None:
@@ -345,7 +344,7 @@ class file_regex_check(repo_test):
         file_path = repo_test_suite.working_path / self.filename
         if not os.path.exists(file_path):
             repo_test_suite.print_error(f'File does not exist: {file_path}')
-            return_val = False
+            return self.error_result()
         # Check to see if there is a match
         regex_match = False
         with open(file_path, 'r') as file:
@@ -429,20 +428,21 @@ class files_tracked_test(repo_test):
 
 class make_test(repo_test):
     ''' Executes a Makefile rule in the repository.
-
-    make_rule: string representing the makefile rule to execute.
-    required_input_files: list of files that should exist before the make rule is executed.
-    check_build_files: list of files that should be created after the make rule is executed. These files will be checked.
-    generate_output_file: if True, an output file will be generated with the make output.
-    make_output_filename: the name of the output file. If None, a default name will be generated.
-    abort_on_error: if True, the test will abort if the make rule fails.
-    timeout_seconds: the number of seconds before the test will timeout.
     '''
 
     def __init__(self, make_rule, required_input_files = None, required_build_files = None, 
                  generate_output_file = True, make_output_filename=None,
-                 abort_on_error=True, timeout_seconds = 60):
-        ''' make_rule is the string makefile rule that is executed. '''
+                 abort_on_error=True, timeout_seconds = 60,
+                 copy_build_files_dir = None, copy_prefice_str = None):
+        ''' - make_rule: the string makefile rule that is executed. 
+            - required_input_files: list of files that should exist before the make rule is executed.
+            - required_build_files: list of files that should be created after the make rule is executed.
+            - generate_output_file: if True, an output file will be generated with the make output.
+            - make_output_filename: the name of the output file. If None, a default name will be generated.
+            - copy_build_files_dir: the directory to copy the build files to after the make rule is executed
+              (default is None in which case no files are copied)
+            - copy_prefice_str: string to prepend to the copied file name
+        '''
         if generate_output_file and make_output_filename is None:
             # default makefile output filename
             make_output_filename = "make_" + make_rule.replace(" ", "_") + '.log'
@@ -451,8 +451,11 @@ class make_test(repo_test):
         self.make_rule = make_rule
         self.required_input_files = required_input_files
         self.required_build_files = required_build_files
+        self.copy_build_files_dir = copy_build_files_dir
+        self.copy_prefice_str = copy_prefice_str
 
     def module_name(self):
+        ''' Generates custom module name string '''
         name_str = f"Makefile: 'make {self.make_rule}'"
         if self.required_input_files is not None and len(self.required_input_files) > 0:
             name_str += " required: "
@@ -481,13 +484,40 @@ class make_test(repo_test):
         if make_return_val != 0:
             return self.error_result()
         result = self.success_result()
-        # Check to see if the build files exist
+        # Check to see if the required build files exist.
+        missing_build_files = []
         if self.required_build_files is not None and len(self.required_build_files) > 0:
             for file in self.required_build_files:
                 if not os.path.exists(file):
-                    repo_test_suite.print_error(f' Expected build file does not exist: {file}')
-                    result = self.warning_result()
+                    missing_build_files.append(file)
+                    # repo_test_suite.print_error(f' Expected build file does not exist: {file}')
+                    # result = self.warning_result()
+        if len(missing_build_files) > 0: # there are missing build files
+            missing_files_str = ""
+            for file in missing_build_files:
+                missing_files_str += f'{file} '
+            repo_test_suite.print_error(f'Missing build files: {missing_build_files}')
+            result = self.warning_result()
+        elif self.copy_build_files_dir is not None: # all the files exist
+            #  If the build files are to be copied, copy them to the copy directory
+            for build_file in self.required_build_files:
+                self.copy_build_file(repo_test_suite, build_file)
         return result
+
+    def copy_build_file(self, repo_test_suite, build_file):
+        ''' Copies the build file to the copy directory '''
+        build_file_path = pathlib.Path(build_file)
+        dest_filename = f'{build_file_path.name}'
+        if self.copy_prefice_str is not None:
+            dest_filename = f'{self.copy_prefice_str}_{dest_filename}'
+        dest_path = pathlib.Path(self.copy_build_files_dir) / dest_filename
+        repo_test_suite.print(f"Copying {build_file_path} to {dest_path}")
+        try: 
+            shutil.copyfile(build_file_path, dest_path)
+        except Exception as e:
+            repo_test_suite.print(f"Error copying file {build_file_path} to {dest_path}")
+            repo_test_suite.print(f"Error: {e}")
+            return False
 
 class execs_exist_test(repo_test):
     ''' Determines whether an executable exists in the path (like unix)
