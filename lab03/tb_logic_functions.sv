@@ -36,19 +36,19 @@ module tb_logic_functions();
             #10
             $display("A=%b B=%b C=%b: O1=%b O2=%b O3=%b O4=%b at time %t", 
                 a,b,c, o1, o2, o3, o4, $time);
-            if (o1 != t_o1) begin
+            if (o1 !==t_o1) begin
                 $display(" ERROR: O1=%b but expecting %b", o1, t_o1);
                 errors = errors + 1;
             end
-            if (o2 != t_o2) begin
+            if (o2 !== t_o2) begin
                 $display(" ERROR: O2=%b but expecting %b", o2, t_o2);
                 errors = errors + 1;
             end
-            if (o3 != t_o3) begin
+            if (o3 !== t_o3) begin
                 $display(" ERROR: O3=%b but expecting %b", o3, t_o3);
                 errors = errors + 1;
             end
-            if (o4 != t_o4) begin
+            if (o4 !== t_o4) begin
                 $display(" ERROR: O4=%b but expecting %b", o4, t_o4);
                 errors = errors + 1;
             end

@@ -3,7 +3,6 @@
 import argparse
 import os
 import git
-import subprocess
 import time
 
 import repo_test
@@ -15,21 +14,11 @@ from repo_test_suite import repo_test_suite
 #   - Fix up the error reporting (return error object instead of printing)
 #   - Provide a link to the web page for instructions on how to address this problem
 #   - Check to see if the student has changed the starter code locally
-#   - Provide a way for having the simulation environment return an error when the testbench fails (lab 2)
 #   - For uncommitted files, should we only check for the current directory or the entire repo?
-# - tag flag
-#   - The tag flag is used to checkout a specific tag before running the script. This is used to check out the code at the time of submission and run
-#     It is different from the submit flag in that it does not actually tag the repository. Used for grading and checking code without resubmitting.
-#   - Have the script return the checkout to main when done (or cache the current branch and return to current branch)
-# - Submit Flag
-#   - Other:
-#     - Add ability to checkout entire repository to a temporary directory and run the script on that directory rather than the local directory
 
 # Script changes:
 # * flag to do a remote check like the TAs would do (default is local)
-# * A step that sees if the starter code was updated as of the day the lab started
 # * Flag to copy intermediate files during build before the clean occurs
-# * Instructions on the passoff script
 
 class test_suite_320(repo_test_suite):
     ''' 
@@ -108,7 +97,9 @@ class test_suite_320(repo_test_suite):
         ''' Add a makefile rule test '''
         make_test = repo_test.make_test(make_rule, required_input_files = required_input_files, 
                                         required_build_files = required_build_files,
-                                        timeout_seconds=timeout_seconds)
+                                        timeout_seconds=timeout_seconds,
+                                        copy_build_files_dir = self.copy_file_dir,
+                                        copy_prefice_str = self.prepend_file_str)
         self.add_build_test(make_test)
 
     def add_required_files(self, file_list, check_files_not_tracked = False, check_tracked_files = False):
@@ -116,7 +107,8 @@ class test_suite_320(repo_test_suite):
         Optionally check to make sure it is not committed in the repo (for build files)
         optionally check to make sure it is committed in the repo (for required files) '''
         # Add test to see if the file was generated (in the current working directory)
-        check_file_test = repo_test.file_exists_test(file_list, copy_dir = self.copy_file_dir, prepend_file_str = self.prepend_file_str)
+        #check_file_test = repo_test.file_exists_test(file_list, copy_dir = self.copy_file_dir, prepend_file_str = self.prepend_file_str)
+        check_file_test = repo_test.file_exists_test(file_list)   # Commented out copying. No need to copy existing files, only need to copy built files
         self.add_post_build_test(check_file_test)
         # Add test to make sure the file is not committed in the repository
         if check_files_not_tracked:
@@ -135,7 +127,6 @@ class test_suite_320(repo_test_suite):
         self.print_test_start_message()
         test_num = 1
         final_result = True
-        # First run the repository tests
         if self.repo_tests:
             result = self.iterate_through_tests(self.repo_tests, start_step = test_num)
             test_num += len(self.repo_tests)
@@ -155,8 +146,47 @@ class test_suite_320(repo_test_suite):
         if self.run_clean_tests:
             result = self.iterate_through_tests(self.clean_tests, start_step = test_num)
             test_num += len(self.clean_tests) 
-            final_result = final_result and result 
-        if self.perform_submit and self.repo_tests:
+            final_result = final_result and result
+        self.print_test_status(f"Test completed \'{self.test_name}\'")
+        # Submission checks
+        all_tests_run = self.run_pre_build_tests and self.run_build_tests \
+            and self.run_post_build_tests and self.run_clean_tests
+        if self.perform_submit:
+            self.print_test_status(f"Attempting Submission for '{self.test_name}'")
+            # If performing a submit, the final messages will be related to the submission process
+            if not all_tests_run:
+                self.print_error("Cannot submit the lab: not all tests have been run")
+                self.print_test_summary()
+                return
+            if not final_result:
+                self.print_error("Cannot submit the lab due to errors in the tests")
+                self.print_test_summary()
+                return
+            submit_status = self.submit_lab(self.test_name)
+            if not submit_status:
+                return
+            check_commit_date_status = self.check_commit_date(self.test_name)
+            if not check_commit_date_status:
+                return
+        else: # Not performing a submit. Provide messages related to the status of the submit
+            self.print_test_summary()
+            self.print_test_status(f"\nSubmission status for '{self.test_name}'")
+            # See if there is a lab tag already submitted
+            lab_tag_commit = self.get_lab_tag_commit(self.test_name)
+            if lab_tag_commit is not None: # there is a current submission
+                commit_file_contents = self.get_commit_file_contents(lab_tag_commit)
+                if commit_file_contents is None:
+                    self.print_error("  Tag exists but there is no commit date")
+                else: # Valid submission
+                    self.print_test_status(" Valid Submission")
+                    self.print(commit_file_contents)
+                    # Check to see if the current directory is different from the tag commit
+                    # (don't check other directories as they may change)
+            else: # there is not a current submission
+                self.print_error("  No submission exists")
+        return
+
+        if self.perform_submit and all_tests_run:
             if not final_result:
                 self.print_error("Cannot submit the lab due to errors in passoff script")
                 return
@@ -168,31 +198,35 @@ class test_suite_320(repo_test_suite):
                 return
         self.print_test_end_message()
 
-    def submit_lab(self, lab_name):
-        ''' Passoff a lab assignment '''
-        self.print(f"Attempting Submission for {lab_name}")
-        result = repo_test.get_remote_tags()
+    def get_lab_tag_commit(self, lab_name, fetch_remote_tags = True):
+        ''' Get the tag associated with a lab assignment. If the tag doesn't exist, return None. '''
+        if fetch_remote_tags:
+            result = repo_test.get_remote_tags()
         if not result:
             return False
-        # Get all remote tags (is there a reliable way of doing this with Git Python?)
-        # try:
-        #     result = subprocess.run(["git fetch --tags"], shell=True, capture_output=True, text=True)
-        #     print(result.stdout)
-        # except subprocess.CalledProcessError as e:
-        #     self.print_error(f"Error fetching tags: {e}")
-        #     return False
-        # Check if the tag exists in the repository
         tag = next((tag for tag in self.repo.tags if tag.name == lab_name), None)
-        if tag is not None:
-            #wirthlin@BYU-GCXHGWLQP6 lab01 % git push --delete origin lab01
-            #wirthlin@BYU-GCXHGWLQP6 lab01 % git tag --delete lab01
-            # Tag exists
-        #     - If there is a tag:
-        #       - Check to see if the tag code is different from the current commit. If not, exit saying it is already tagged and ready to submit
-        #       - If the code is different, ask for permission to retag and push the tag to the remote. (ask for permission first unless '--force' flag is given)
-            tag_commit = tag.commit
+        if tag is None:
+            return None
+        return tag.commit
+        # % git push --delete origin lab01
+        # % git tag --delete lab01
+
+    def get_commit_file_contents(self, tag_commit):
+        if tag_commit is None:
+            return None
+        return repo_test.get_commit_file_contents(tag_commit, ".commitdate")
+
+    def submit_lab(self, lab_name):
+        ''' Submit a lab assignment. This involves tagging the current commit with the lab name and pushing it to the remote repository.
+        It does not check if the any actions associated with the commit/push are successful. '''
+        tag_commit = self.get_lab_tag_commit(lab_name)
+        if tag_commit is not None:
+            # - If there is a tag:
+            #    - Check to see if the tag code is different from the current commit. If not, exit saying it is already tagged and ready to submit
+            #    - If the code is different, ask for permission to retag and push the tag to the remote. (ask for permission first unless '--force' flag is given)
             current_commit = self.repo.head.commit
-            commit_file_contents = repo_test.get_commit_file_contents(tag_commit, ".commitdate")
+            commit_file_contents = self.get_commit_file_contents(tag_commit)
+            # commit_file_contents = repo_test.get_commit_file_contents(tag_commit, ".commitdate")
             if current_commit.hexsha == tag_commit.hexsha:
                 print(f"Tag '{lab_name}' exists and is already up-to-date with the current commit.")
                 if commit_file_contents is not None:
@@ -273,6 +307,7 @@ def build_test_suite_320(assignment_name, max_repo_files = 20, start_date = None
     parser.add_argument("--norepo", action="store_true", help="Do not run Repo tests")
     parser.add_argument("--nobuild", action="store_true", help="Do not run build tests")
     parser.add_argument("--noclean", action="store_true", help="Do not run clean tests")
+    parser.add_argument("--nocolor", action="store_true", help="Remove color tags from output")
     parser.add_argument("--log", type=str, help="Save output to a log file (relative file path)")
     parser.add_argument("--starterbranch", type=str, default = "main", help="Branch for starter code to check")
     parser.add_argument("--copy", type=str, help="Copy generated files to a directory")
@@ -304,6 +339,10 @@ def build_test_suite_320(assignment_name, max_repo_files = 20, start_date = None
         test_suite.run_build_tests = False
     if args.noclean:
         test_suite.run_clean_tests = False
+    if args.nocolor:
+        test_suite.test_color = None
+        test_suite.error_color = None
+
     # See if a copy of the build files are needed and if so, customize the copy
     if args.copy:
         test_suite.copy_file_dir = args.copy
