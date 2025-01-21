@@ -18,7 +18,6 @@ from repo_test_suite import repo_test_suite
 
 # Script changes:
 # * flag to do a remote check like the TAs would do (default is local)
-# * Flag to copy intermediate files during build before the clean occurs
 
 class test_suite_320(repo_test_suite):
     ''' 
