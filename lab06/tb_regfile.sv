@@ -55,7 +55,7 @@ module tb_regfile();
 
     task automatic check_clear();
         // Check to make sure all registers are cleared
-        $display("Checking for empty register file at time %0t", $time);
+        $display("[%0t] Checking for empty register file", $time);
         for(i=0; i < 8; i=i+1) begin
             addr = i;
             @(negedge clk);
@@ -64,6 +64,17 @@ module tb_regfile();
                 errors = errors + 1;
             end
         end
+    endtask
+
+    task automatic set_clear();
+        // Check to make sure all registers are cleared
+        $display("[%0t] Set Clear", $time);
+        clr = 1;
+        @(negedge clk);
+        for(i=0; i < 8; i=i+1)
+            regfile_array[i] = 0;
+        clr = 0;
+        @(negedge clk);
     endtask
 
     // Instance the Seven-Segment display
@@ -99,7 +110,12 @@ module tb_regfile();
         check_clear();
         write_sequential(4'b0001);
         write_sequential(4'b1000);
-        for (i=0; i < 64; i=i+1) begin
+        // Clear register file
+        repeat(3) @(negedge clk);
+        set_clear();
+        repeat(3) @(negedge clk);
+        check_clear();
+        for (i=0; i < 32; i=i+1) begin
             rand_write();
             rand_read();
         end
