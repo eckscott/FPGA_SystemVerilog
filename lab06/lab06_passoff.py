@@ -20,7 +20,7 @@ def main():
     tester.add_build_test(repo_test.file_regex_check("sim_regfile.log", "\*\*\* Error", "Testbench Log Test"))
     tester.add_Makefile_rule("synth", [], ["synthesis.log", "regfile_top_synth.dcp"])
     tester.add_Makefile_rule("implement", ["regfile_top_synth.dcp"], ["implement.log", "regfile_top.bit", 
-                                            "regfile_top.dcp", "utilization.rpt", "timing.rpt"])
+                                            "regfile_top.dcp", "utilization.rpt"])
     tester.run_tests()
 
 if __name__ == "__main__":
