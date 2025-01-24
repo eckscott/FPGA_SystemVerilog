@@ -4,7 +4,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-module tb_SevenSegment();
+module tb_sevensegment();
 
     reg [3:0] tb_data;
     wire [6:0] tb_segment;
