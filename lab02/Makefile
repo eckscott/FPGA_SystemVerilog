@@ -6,6 +6,6 @@ implement_adder:
 
 clean:
 	rm -f *.bit *.jou *.txt *.pb *.wdb *.dcp *.log *.rpt
-	rm -Rf */.dir
+	rm -rf xsim.dir/ .Xil/
 
 
