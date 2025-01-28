@@ -4,7 +4,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-module tb_multisegment #(parameter REFRESH_RATE=1_000_000,  // default high refresh rate for simulation 
+module tb_multisegment #(parameter REFRESH_RATE = 500_000,  // default high refresh rate for simulation 
     parameter CLK_FREQUENCY=100_000_000) ();
 
     localparam REFRESH_CLOCKS = CLK_FREQUENCY / REFRESH_RATE;
