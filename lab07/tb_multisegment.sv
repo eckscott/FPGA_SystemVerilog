@@ -57,12 +57,11 @@ module tb_multisegment #(parameter REFRESH_RATE = 500_000,  // default high refr
 
     // Check the segments and digit point to make sure they are ok
     logic [3:0] current_data_to_display;
-    int anode_index, precheck_errors;
+    int anode_index;
     assign anode_index = anode_to_index(tb_anode);
     assign current_data_to_display = tb_data[4*anode_index +: 4]; // the data that should be displayed
     always_ff @(negedge clk) begin
         if (new_valid_anode) begin
-            precheck_errors = errors;
             $write("[%0t]  ",$time);
             display_ssd_status();
             // Have a valid anode index. CHeck the digit point
