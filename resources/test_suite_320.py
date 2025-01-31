@@ -7,10 +7,11 @@ import time
 
 import repo_test
 from repo_test_suite import repo_test_suite
+from datetime import datetime
 
 # ToDo:
 # - Lab check script:
-#   - The summaries at the end do not have enough informatino. Provide an option that givs more feedbak on what whet wrong and what to do (the log is so long i is hard to scroll back to see what happened)
+#   - The summaries at the end do not have enough information. Provide an option that givs more feedbak on what whet wrong and what to do (the log is so long i is hard to scroll back to see what happened)
 #   - Fix up the error reporting (return error object instead of printing)
 #   - Provide a link to the web page for instructions on how to address this problem
 #   - Check to see if the student has changed the starter code locally
@@ -21,8 +22,11 @@ from repo_test_suite import repo_test_suite
 
 class test_suite_320(repo_test_suite):
     ''' 
-    Represents a suite of tests to perform on a ECEN 320 repository. The tests are divided into several
-    categories that are executed in a specific order:
+    Represents a suite of tests to perform on a ECEN 320 repository. 
+        repo: The git.Repo object that represents the local repository being tested.
+        assignment_name: The name of the assignment (used for tagging, i.e. 'lab01')
+        starter_check_date: A date object indicating the last date to check for starter code updates
+    The tests are divided into several categories that are executed in a specific order:
         self.pre_build_tests: Tests that are run on the repository to check for integrity (before build)
         self.build_tests: Tests that are run involving a build process (generates temporary files, etc.)
         self.post_build_tests: Tests that are run after the build and before the clean (used for checking)
@@ -30,7 +34,8 @@ class test_suite_320(repo_test_suite):
     '''
 
     def __init__(self, repo, assignment_name, max_repo_files = 20, summary_log_filename = None,
-                 required_executables = None, submit = False, starter_branch = "main"):
+                 required_executables = None, submit = False, starter_branch = "main",
+                 starter_check_date = None):
         super().__init__(repo, test_name = assignment_name, summary_log_filename = summary_log_filename)
         # Initialize the sets of tests
         self.repo_tests = []
@@ -38,11 +43,6 @@ class test_suite_320(repo_test_suite):
         self.build_tests = []
         self.post_build_tests = []
         self.clean_tests = []
-        #self.add_pre_build_tests(max_repo_files, tag_str = assignment_name)
-        self.add_repo_tests(max_repo_files, remote_branch = starter_branch)
-        self.add_pre_build_tests()
-        self.add_clean_tests()
-
         self.run_pre_build_tests = True
         self.run_build_tests = True
         self.run_post_build_tests = True
@@ -52,6 +52,11 @@ class test_suite_320(repo_test_suite):
         self.required_executables = required_executables
         self.perform_submit = submit
         self.force = False
+        self.starter_check_date = starter_check_date
+        # Add tests
+        self.add_repo_tests(max_repo_files, remote_branch = starter_branch)
+        self.add_pre_build_tests()
+        self.add_clean_tests()
 
     def add_repo_tests(self, max_repo_files, tag_str = None, check_start_code = True, 
                             required_executables = None, remote_branch = "main"):
@@ -60,7 +65,9 @@ class test_suite_320(repo_test_suite):
         self.add_repo_test(repo_test.check_remote_origin())
         self.add_repo_test(repo_test.check_for_max_repo_files(max_repo_files))
         if check_start_code:
-            self.add_repo_test(repo_test.check_remote_starter("startercode", remote_branch = remote_branch))
+            self.add_repo_test(repo_test.check_remote_starter("startercode", 
+                    remote_branch = remote_branch,
+                    last_date_of_remote_commit = self.starter_check_date))
         if tag_str is not None:
             self.add_repo_test(repo_test.check_for_tag(tag_str))
         if required_executables is not None:
@@ -152,15 +159,22 @@ class test_suite_320(repo_test_suite):
             and self.run_post_build_tests and self.run_clean_tests
         if self.perform_submit:
             self.print_test_status(f"Attempting Submission for '{self.test_name}'")
+            ready_for_submission = True
             # If performing a submit, the final messages will be related to the submission process
             if not all_tests_run:
                 self.print_error("Cannot submit the lab: not all tests have been run")
-                self.print_test_summary()
-                return
+                ready_for_submission = False
             if not final_result:
                 self.print_error("Cannot submit the lab due to errors in the tests")
+                ready_for_submission = False
+            # See if the current date is before the start of the lab (can't sumbit until lab starts)
+            # if self.starter_check_date is not None and datetime.now() < self.starter_check_date:
+            #     self.print_error("Cannot submit the lab: submission before the lab start date")
+            #     ready_for_submission = False
+            if not ready_for_submission:
                 self.print_test_summary()
                 return
+            # Perform lab submission
             submit_status = self.submit_lab(self.test_name)
             if not submit_status:
                 return
@@ -184,18 +198,6 @@ class test_suite_320(repo_test_suite):
             else: # there is not a current submission
                 self.print_error("  No submission exists")
         return
-
-        if self.perform_submit and all_tests_run:
-            if not final_result:
-                self.print_error("Cannot submit the lab due to errors in passoff script")
-                return
-            submit_status = self.submit_lab(self.test_name)
-            if not submit_status:
-                return
-            check_commit_date_status = self.check_commit_date(self.test_name)
-            if not check_commit_date_status:
-                return
-        self.print_test_end_message()
 
     def get_lab_tag_commit(self, lab_name, fetch_remote_tags = True):
         ''' Get the tag associated with a lab assignment. If the tag doesn't exist, return None. '''
@@ -298,6 +300,10 @@ class test_suite_320(repo_test_suite):
 
 def build_test_suite_320(assignment_name, max_repo_files = 20, start_date = None):
     """ A helper function used by 'main' functions to build a test suite based on command line arguments.
+        assignment_name: the name of the assignment used for taggin (e.g. 'lab01')
+        max_repo_files: the maximum number of files allowed in the lab directory of the repository
+        start_date: the date when the lab officialy starts (used to prevent early submissions and to enforce startercode updating)
+           This parameter is a string and is in the format "MM/DD/YYYY". If no parameter is given, None is used.
     """
     parser = argparse.ArgumentParser(description=f"Test suite for 320 Assignment: {assignment_name}")
     parser.add_argument("--submit",  action="store_true", help="Submit the assignment to the remote repository (tag and push)")
@@ -325,10 +331,14 @@ def build_test_suite_320(assignment_name, max_repo_files = 20, start_date = None
     if args.log is not None:
         summary_log_filename = args.log
 
+    # Create datetime object for starter code check if date is given
+    if start_date is not None:
+        start_date = datetime.strptime(start_date, "%m/%d/%Y")
+
     # Build test suite
     test_suite = test_suite_320(repo, assignment_name,
         max_repo_files = max_repo_files, summary_log_filename = summary_log_filename, submit = args.submit,
-        starter_branch = args.starterbranch)
+        starter_branch = args.starterbranch, starter_check_date = start_date)
     test_suite.force = args.force
 
     # Decide which tests to run

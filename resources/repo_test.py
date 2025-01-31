@@ -767,7 +767,12 @@ class check_remote_starter(repo_test):
     from this remote starter.
     '''
     def __init__(self, remote_name, remote_branch = None, last_date_of_remote_commit = None):
-        '''  '''
+        '''  
+        remote_name: the name of the remote repository to check
+        remote_branch: the branch of the remote repository to check (if None, defaults to 'main')
+        last_date_of_remote_commit: the date of the last commit to check for updates (if None, defaults to currenttime)
+          This parameter will only check to see if there are commits on the remote before or at this time.
+        '''
         super().__init__()
         self.remote_name = remote_name
         self.remote_branch = remote_branch
