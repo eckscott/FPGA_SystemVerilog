@@ -15,7 +15,7 @@ import repo_test
 def main():
     # Check on vivado
     tester = test_suite_320.build_test_suite_320("lab07", start_date="02/24/2025")
-    tester.add_required_tracked_files(["seven_segment4.sv","ssd_top.sv"])
+    tester.add_required_tracked_files(["seven_segment4.sv","ssd_top.sv", "multisegment_FDCE_0.png"])
     tester.add_Makefile_rule("sim_multisegment", ["seven_segment4.sv"], ["sim_multisegment.log"])
     tester.add_build_test(repo_test.file_regex_check("sim_multisegment.log", "ERROR", "Testbench Log 'No Error' Test",
                                                      error_msg = "Error in testbench log"))
