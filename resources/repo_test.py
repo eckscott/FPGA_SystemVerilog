@@ -30,8 +30,9 @@ def fetch_remote(repo, remote_name = None):
     This function may raise an Exception. '''
     try:
         # Ensure the local repository is not in a detached HEAD state
-        if repo.head.is_detached:
-            raise Exception("The repository is in a detached HEAD state.")
+        # TODO: provide a flat to check for detached state? No problems with fetch
+        # if repo.head.is_detached:
+        #     raise Exception("The repository is in a detached HEAD state.")
         if remote_name is not None:
             if remote_name not in repo.remotes:
                 raise Exception(f"Remote {remote_name} not found in repository")
@@ -53,9 +54,12 @@ def get_unpushed_commits(repo, remote_name = None, remote_branch_name = None):
     if remote_branch_name is None:
         remote_branch_name = "main"
     remote_branch = f"{remote_name}/{remote_branch_name}"  #repo.active_branch.name
-    local_branch = repo.active_branch.name
+    # Commit is used instead of branch name since tags don't have branch names (but they have commits)
+    # local_branch = repo.active_branch.name
+    local_commit = repo.head.commit
     # Check for unpushed local commits
-    unpushed_commits = list(repo.iter_commits(f"{remote_branch}..{local_branch}"))
+    # unpushed_commits = list(repo.iter_commits(f"{remote_branch}..{local_branch}"))
+    unpushed_commits = list(repo.iter_commits(f"{remote_branch}..{local_commit}"))
     return unpushed_commits
     # if unpushed_commits:
     #     print(f"Local branch '{current_branch}' has unpushed commits:")
@@ -74,9 +78,12 @@ def get_unpulled_commits(repo,  remote_name = None, remote_branch_name = None, d
     if remote_branch_name is None:
         remote_branch_name = "main"
     # Create branch names
-    remote_branch = f"{remote_name}/{remote_branch_name}"  #repo.active_branch.name
-    local_branch = repo.active_branch.name
-    unpulled_commits = list(repo.iter_commits(f"{local_branch}..{remote_branch}"))
+    remote_branch = f"{remote_name}/{remote_branch_name}"
+    # Commit is used instead of branch name since tags don't have branch names (but they have commits)
+    # local_branch = repo.active_branch.name
+    local_commit = repo.head.commit
+    # unpulled_commits = list(repo.iter_commits(f"{local_branch}..{remote_branch}"))
+    unpulled_commits = list(repo.iter_commits(f"{local_commit}..{remote_branch}"))
     # Remove those commits that are after the date limit
     if date_limit is not None:
         unpulled_commits = [commit for commit in unpulled_commits if datetime.datetime.fromtimestamp(commit.committed_date) <= date_limit]
@@ -760,7 +767,12 @@ class check_remote_starter(repo_test):
     from this remote starter.
     '''
     def __init__(self, remote_name, remote_branch = None, last_date_of_remote_commit = None):
-        '''  '''
+        '''  
+        remote_name: the name of the remote repository to check
+        remote_branch: the branch of the remote repository to check (if None, defaults to 'main')
+        last_date_of_remote_commit: the date of the last commit to check for updates (if None, defaults to currenttime)
+          This parameter will only check to see if there are commits on the remote before or at this time.
+        '''
         super().__init__()
         self.remote_name = remote_name
         self.remote_branch = remote_branch
