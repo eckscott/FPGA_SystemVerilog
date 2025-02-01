@@ -21,7 +21,7 @@ module logic_functions(
     //O2=(A+C')(BC)
     not(cbar, C);           //cbar = C'
     or(a3, A, cbar);        //a3 = (A+C')
-    or(a4, B, C);           //a4 = BC
+    and(a4, B, C);           //a4 = BC
     and(O2, a3, a4);
 
     //O3=AB'+C
