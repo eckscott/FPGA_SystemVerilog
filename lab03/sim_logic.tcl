@@ -1,3 +1,12 @@
+# /*****************************************************************************
+# *
+# * Filename: sim_logic.tcl
+# * 
+# * Author: Ethan Scott
+# * Description: simulation of all 8 inputs
+# *
+# *****************************************************************************/
+
 # Case 1: Simulate A=0, B=0, C=0 for 10 ns
 set_value A 0
 set_value B 0
