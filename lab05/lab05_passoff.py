@@ -15,8 +15,8 @@ import repo_test
 def main():
     # Check on vivado
     tester = test_suite_320.build_test_suite_320("lab05", start_date="02/10/2025")
-    tester.add_required_tracked_files(["seven_segment.sv", "seven_segment_top.sv", "sim_seven_segment_top.png", 
-                                       "segment_lut.png"])
+    tester.add_required_tracked_files(["seven_segment.sv", "seven_segment_top.sv", "sim_seven_segment_top.tcl",
+                                       "sim_seven_segment_top.png", "segment_lut.png"])
     tester.add_Makefile_rule("sim_sevensegment", ["seven_segment.sv"], ["sim_sevensegment.log"])
     tester.add_build_test(repo_test.file_regex_check("sim_sevensegment.log", "\*\*\* Error", "Testbench Log Test"))
     tester.add_Makefile_rule("synth", [], ["synthesis.log", "seven_segment_synth.dcp"])
