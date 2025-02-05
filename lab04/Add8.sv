@@ -13,7 +13,7 @@ module Add8(
     input logic[7:0] b,       
     input logic cin);       //cin=carry in
 
-    wire[7:0] c;            //carry signals between adders
+    wire[6:0] c;            //carry signals between adders
 
     FullAdd F0(.a(a[0]), .b(b[0]), .cin(cin), .s(s[0]), .co(c[0]));
     FullAdd F1(.a(a[1]), .b(b[1]), .cin(c[0]), .s(s[1]), .co(c[1]));

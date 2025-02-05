@@ -18,5 +18,7 @@ module FullAdd(
     and(i3, a, cin);            //i3=acin
     or(co, i1, i2, i3);         //co=i1+i2+i3
 
+    xor(s, a, b, cin);          //s=a + b + cin
+
 
 endmodule
