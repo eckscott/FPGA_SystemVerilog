@@ -21,9 +21,9 @@ module arithmetic_top(
     xor(b[2], btnc, sw[10]);
     xor(b[3], btnc, sw[11]);
     xor(b[4], btnc, sw[12]);
-    xor(b[5], btnc, sw[12]);
-    xor(b[6], btnc, sw[13]);
-    xor(b[7], btnc, sw[14]);
+    xor(b[5], btnc, sw[13]);
+    xor(b[6], btnc, sw[14]);
+    xor(b[7], btnc, sw[15]);
 
     //overflow detection
     not(bbar, b[7]);
