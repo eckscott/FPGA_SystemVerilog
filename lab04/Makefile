@@ -1,5 +1,5 @@
 sim_testbench:
-	xvlog arithmetic_top.sv tb_arithmetic.sv -sv --nolog
+	xvlog arithmetic_top.sv tb_arithmetic.sv Add8.sv FullAdd.sv -sv --nolog
 	xelab tb_arithmetic -debug typical --nolog
 	xsim tb_arithmetic -log testbench.log --runall
 
