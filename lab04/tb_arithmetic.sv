@@ -42,7 +42,7 @@ module tb_arithmetic();
 		$display("*** Starting simulation at time %t ***", $time);
 		#20
 
-		// Test 256 random cases
+		// Test random cases
 		for(i=1; i < 256; i=i+1) begin
 			#10
 			btnc = i%2;  // switch between addition and subtraction every iteration
