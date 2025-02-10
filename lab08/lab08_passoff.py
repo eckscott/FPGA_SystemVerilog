@@ -15,7 +15,7 @@ import repo_test
 def main():
     # Check on vivado
     tester = test_suite_320.build_test_suite_320("lab08", start_date="03/03/2025")
-    tester.add_required_tracked_files(["vga_timing.sv","vga_top.sv", "sim_top_vga.tcl",
+    tester.add_required_tracked_files(["vga_timing.sv","vga_top.sv", "sim_vga_top.tcl",
                                        "sim_vga_top.png", "pixel_x.png"])
     tester.add_Makefile_rule("sim_vga_timing", ["vga_timing.sv"], ["sim_vga_timing.log"])
     tester.add_build_test(repo_test.file_regex_check("sim_vga_timing.log", "COMPLETED SUCCESSFULLY with 0 errors", 
