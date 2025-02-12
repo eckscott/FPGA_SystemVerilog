@@ -15,7 +15,7 @@ import repo_test
 def main():
     # Check on vivado
     tester = test_suite_320.build_test_suite_320("lab09", start_date="03/10/2025")
-    tester.add_required_tracked_files(["debounce.sv","debounce_top.sv", "sim_vga_top.tcl",
+    tester.add_required_tracked_files(["debounce.sv","debounce_top.sv", "sim_debounce.tcl",
                                        "sim_debounce.png", "sim_debounce_top.tcl"])
     tester.add_Makefile_rule("sim_debounce", ["debounce.sv"], ["sim_debounce.log"])
     tester.add_build_test(repo_test.file_regex_check("sim_debounce.log", "Simulation done, WAIT_TIME_US=5000 with 0 errors", 
