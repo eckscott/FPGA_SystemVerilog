@@ -15,7 +15,8 @@ import repo_test
 def main():
     tester = test_suite_320.build_test_suite_320("lab10", start_date="03/17/2025")
     tester.add_required_tracked_files(["tx.sv","tx_top.sv", "sim_tx.tcl",
-                                       "sim_tx.png", "sim_tx_top.tcl", "sim_tx_top.png",])
+                                       "sim_tx.png", "sim_tx_top.tcl", "sim_tx_top.png",
+                                       "tx_demo.png"])
     tester.add_Makefile_rule("sim_tx_tb", ["tx.sv"], ["sim_tx_tb.log"])
     tester.add_build_test(repo_test.file_regex_check("sim_tx_tb.log", "Simulation done with 0 errors", 
                                                      "Tx Testbench Test", error_on_match = False,
