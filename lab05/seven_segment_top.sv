@@ -21,11 +21,11 @@ module seven_segment_top(
     
     assign segment[7] = btnc ? 0 : 1; //turns on digit point with push of btnc
     
-    assign anode[0] = btnl ? 1 : btnr ? 1 : 0;
-    assign anode = btnl ? 0 : btnr ? 1 : 1;
+    assign anode[0] = btnl ? 0 : btnr ? 1 : 0;
+    assign anode[3:1] = btnl ? 000 : 111;
 
 
-    seven_segment M0(.data(sw), .seg(segment[6:0]));
+    seven_segment M0(.data(sw), .segment(segment[6:0]));
 
 
 endmodule
