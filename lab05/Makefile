@@ -6,6 +6,9 @@ sim_sevensegment:
 synth:
 	vivado -mode batch -source synth.tcl -log synthesis.log -nojournal -notrace
 
+implement:
+	vivado -mode batch -source implement.tcl -log implement.log -nojournal -notrace
+
 clean:
 	rm -f *.bit *.jou *.txt *.pb *.wdb *.dcp *.log *.rpt
 	rm -rf xsim.dir/ .Xil/
