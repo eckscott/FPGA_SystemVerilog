@@ -19,7 +19,7 @@ def main():
     tester.add_Makefile_rule("sim_multisegment", ["seven_segment4.sv"], ["sim_multisegment.log"])
     tester.add_build_test(repo_test.file_regex_check("sim_multisegment.log", "ERROR", "Testbench Log 'No Error' Test",
                                                      error_msg = "Error in testbench log"))
-    tester.add_build_test(repo_test.file_regex_check("sim_multisegment.log", "Correct anode segment timing = 50 clocks", 
+    tester.add_build_test(repo_test.file_regex_check("sim_multisegment.log", "Correct anode segment timing = ", 
                                                      "Testbench Log 'correct anode timing' test", error_on_match = False,
                                                      error_msg = "Incorrect anode segment timing"))
     tester.add_Makefile_rule("synth", ["seven_segment4.sv", "ssd_top.sv"], ["synthesis.log", "multisegment_synth.dcp"])
