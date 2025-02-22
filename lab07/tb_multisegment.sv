@@ -11,6 +11,8 @@ module tb_multisegment #(parameter REFRESH_RATE = 500_000,  // default high refr
     localparam SEGMENT_CLOCKS = REFRESH_CLOCKS / 4;
     localparam MIN_SEGMENT_CLOCKS = SEGMENT_CLOCKS - 1;
     localparam MAX_SEGMENT_CLOCKS = SEGMENT_CLOCKS + 1;
+    // Indicates the maximum amount of time to wait before giving up on an anode change
+    localparam MAX_CLOCKS_FOR_ANODE_CHANGE = SEGMENT_CLOCKS * 20;
 
     logic clk, rst;
     logic [15:0] tb_data;
@@ -18,31 +20,39 @@ module tb_multisegment #(parameter REFRESH_RATE = 500_000,  // default high refr
     logic [3:0] tb_anode, tb_anode_d, tb_dp, tb_blank;
     int errors = 0;
 
-    // reg [6:0] segment_const [15:0];
-
     // Instance seven segment display with display counter bits of 5
     seven_segment4 #(.REFRESH_RATE(REFRESH_RATE),.CLK_FREQUENCY(CLK_FREQUENCY)) 
     ss4(.clk(clk), .rst(rst), .data_in(tb_data),
         .blank(tb_blank), .dp_in(tb_dp), .segment(tb_segment), .anode(tb_anode));
 
-    logic valid_anode, new_valid_anode; // indicates we have a valid anode and can check the segments
+    integer clocks_since_anode_change = 0;
+    logic valid_anode, new_valid_anode; 
+    // indicates we have a valid anode and can check the segments
     assign valid_anode = !(^tb_anode === 1'bX) && ($countones(~tb_anode) == 1);
+    // indicates we have a valid anode and it is new (just changed)
     assign new_valid_anode = !(^tb_anode === 1'bX) &&  !(^tb_anode_d  === 1'bX)
         && valid_anode && (tb_anode != tb_anode_d);
+
     always_ff @(posedge clk) begin
-        tb_anode_d = tb_anode;
+        tb_anode_d <= tb_anode;
+        if (tb_anode_d != tb_anode)
+            clocks_since_anode_change <= 0;
+        else
+            clocks_since_anode_change = clocks_since_anode_change + 1;
+        if (clocks_since_anode_change > MAX_CLOCKS_FOR_ANODE_CHANGE) begin
+            $display("ERROR: Anode has not changed in %0d clocks. Should have changed in %0d clocks.", 
+                MAX_CLOCKS_FOR_ANODE_CHANGE, SEGMENT_CLOCKS);
+            $finish;
+        end
     end
 
-    // Check to see if more than one anode is being displayed at a time and give a warning
-    logic more_than_one_anode_error = 0;
+    // Check to see if more than one anode is being displayed at a time.
+    // If so, print an error message and $finish
     always_ff @(posedge clk) begin
-        if (tb_anode != 4'hf && $countones(~tb_anode) > 1 && more_than_one_anode_error == 0) begin
+        if (tb_anode != 4'hf && $countones(~tb_anode) > 1) begin
             $display("ERROR: More than one anode is being displayed at a time: %b", tb_anode);
-            more_than_one_anode_error = 1;
-            errors = errors + 1;
+            $finish;
         end
-        else
-            more_than_one_anode_error = 0;
     end
 
     // Check to see if blanking is applied correctly
