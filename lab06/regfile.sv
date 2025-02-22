@@ -45,9 +45,5 @@ module regfile(
                       ((addr == 6) && load) ? 64 :
                       ((addr == 7) && load) ? 128 :
                       00000000;
-    
-    
-    
-    
-
+                      
 endmodule
