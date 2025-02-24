@@ -74,6 +74,7 @@ class repo_test_suite():
         self.test_name = test_name
         # Colors
         self.test_color = TermColor.YELLOW
+        self.warning_color = TermColor.YELLOW
         self.error_color = TermColor.RED
         # Test result dictionary
         self.test_results = {}
@@ -105,9 +106,12 @@ class repo_test_suite():
                 self.test_log_fp.write(message + '\n')
 
     def print_error(self, message):
-        """ Prints a string to the appropriate locations. """
-        # Print to std_out?
+        """ Prints a message using the 'error_color' """
         self.print_color(self.error_color,message)
+
+    def print_warning(self, message):
+        """ Prints a message using the 'warning_color' """
+        self.print_color(self.warning_color,message)
 
     def print_test_status(self, message):
         self.print_color(self.test_color,message)
