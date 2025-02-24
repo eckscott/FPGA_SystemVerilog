@@ -3,6 +3,9 @@
 # more meaningful. Some settings will be upgraded and cause an error while others
 # will be downgraded to avoid unncessary warnings.
 
+####################
+# Upgrade messages
+####################
 set_msg_config -new_severity "ERROR" -id "Synth 8-87"
 #INFO: [Synth 8-155] case statement is not full and has no default
 set_msg_config -new_severity "ERROR" -id "Synth 8-155"
@@ -22,6 +25,9 @@ set_msg_config -new_severity "ERROR" -id "Synth 8-6859"
 set_msg_config -new_severity "ERROR" -id "Timing 38-282"
 # Upgrade the 'actual bit length 8 differs from formal bit length 22 for port 'o_led' message
 set_msg_config -new_severity "ERROR" -id "VRFC 10-3091"
+####################
+# Downgrade messages
+####################
 # Downgrade the 'There are no user specified timing constraints' to WARNING
 set_msg_config -new_severity "WARNING" -id "Timing 38-313"
 # Downgrade the 'no constraints slected for write' from a warning to INFO
@@ -39,3 +45,6 @@ set_msg_config -new_severity "ERROR" -id "Synth 8-11241"
 #WARNING: [Place 46-29] Timing had been disabled during Placer and, therefore, physical synthesis in Placer will be skipped.
 #  For non sequential circuits this message arrives. Ignore it for the labs that do not have sequential circuits.
 set_msg_config -new_severity "INFO" -id "Place 46-29"
+# Downgrade the following warning. It is given in the regfile lab when no timing constraints are used
+# WARNING: [Place 30-2953] Timing driven mode will be turned off because no critical terminals were found.
+set_msg_config -new_severity "INFO" -id "Place 30-2953"
