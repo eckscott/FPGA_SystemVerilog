@@ -221,7 +221,7 @@ module tb_vga_timing;
 
     //---------------------------------------------------------------------
     // Test 13: Frame Wrap-Around Check
-    // When the counters reach (524,799), the next pixel update should be (0,0).
+    // When the counters reach (520,799), the next pixel update should be (0,0).
     //---------------------------------------------------------------------
     wait_for_pixel_update(520, 799);
     $display("\n---- Testing frame wrap-around from pixel (520,799) ----");
