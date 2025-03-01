@@ -20,9 +20,9 @@ module ssd_top #(CLK_FREQUENCY=100_000_000, REFRESH_RATE=200)(
                                                     //shut off display, turn on all
                                                     // digit points
                                                     //turn off left two digit points
-    logic[15:0] input_val;
-    logic[3:0] blank_val;
-    logic[3:0] dp;
+    logic[15:0] input_val;          // input values from switches
+    logic[3:0] blank_val;           // which digits to blank
+    logic[3:0] dp;                  // digit points
 
     // if btnc pressed, invert value given by switches. If not, keep value of switches
     always_comb begin
@@ -49,8 +49,9 @@ module ssd_top #(CLK_FREQUENCY=100_000_000, REFRESH_RATE=200)(
             dp = 4'b0000;
     end
 
+    // Creates a working 4 digit seven segment display
     seven_segment4 #(.REFRESH_RATE(REFRESH_RATE),.CLK_FREQUENCY(CLK_FREQUENCY))
-    M0(.anode(anode), .segment(segment), .data_in(input_val), .clk(clk),
+    seven_seg_display(.anode(anode), .segment(segment), .data_in(input_val), .clk(clk),
                       .rst(btnd), .blank(blank_val), .dp_in(dp));
 
 endmodule

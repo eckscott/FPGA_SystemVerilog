@@ -88,6 +88,7 @@ module seven_segment4 #(CLK_FREQUENCY=100_000_000, REFRESH_RATE=200)(
             4'b1101: segment[6:0] = 7'b0100001; //d
             4'b1110: segment[6:0] = 7'b0000110; //E
             4'b1111: segment[6:0] = 7'b0001110; //F
+            default: segment[6:0] = 7'b1000000; //0
         endcase 
     end
 
@@ -98,6 +99,7 @@ module seven_segment4 #(CLK_FREQUENCY=100_000_000, REFRESH_RATE=200)(
             2'b01: segment[7] = ~dp_in[1];
             2'b10: segment[7] = ~dp_in[2];
             2'b11: segment[7] = ~dp_in[3];
+            default: segment[7] = 1;
         endcase
     end
 
