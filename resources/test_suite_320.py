@@ -295,7 +295,7 @@ class test_suite_320(repo_test_suite):
             if time.time() - initial_time > timeout:
                 print(f"Timeout reached for checking tag '{lab_name}' commit date.")
                 return False
-            self.print_error(f"Github Submission commit file '{file_path}' not yet created - waiting")
+            self.print_warning(f"Github Submission commit file '{file_path}' not yet created - waiting")
         return False
 
 def build_test_suite_320(assignment_name, max_repo_files = 20, start_date = None):
