@@ -4,8 +4,11 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-module tb_debounce #(parameter CLK_FREQUENCY=100_000_000, 
-    parameter WAIT_TIME_US = 5000, parameter NUMBER_OF_PULSES=4) ();
+module tb_debounce #(
+    parameter CLK_FREQUENCY     = 100_000_000, 
+    parameter WAIT_TIME_US      = 5000,
+    parameter NUMBER_OF_PULSES  = 4
+) ();
 
     localparam WAIT_CLOCKS = CLK_FREQUENCY / 1_000_000 * WAIT_TIME_US;
     localparam MAX_WAIT_CLOCKS = WAIT_CLOCKS + 1;
@@ -21,18 +24,20 @@ module tb_debounce #(parameter CLK_FREQUENCY=100_000_000,
     time noisy_tt = 0; // noisy transition time
     time noisy_delay;
 
-    /* Create multiple noisy pulses that are too small for the debouncer.
-    At the end of this task, the noisy signal will be inverted and will be held long
-    enough to get through the debouncer.
-    false_pulses: the number of pulses to create
-    min_false_pulse_cycles: the minimum number of cycles for each phase of the noisy pulse
-    max_false_pulse_cycles: the maximum number of cycles for each phase of the noisy pulse
-    */ 
-    task automatic noisy_pulse(input int false_pulses, input int min_false_pulse_cycles, 
-        input int max_false_pulse_cycles );
+    // ---------------------------------------------------------------------
+    //  NOISY PULSE TASK
+    //  - produces short toggles (false pulses)
+    //  - ends by holding tb_noisy stable for WAIT_CLOCKS cycles
+    //  - false_pulses: the number of pulses to create
+    //  - min_false_pulse_cycles: the minimum number of cycles for each phase of the noisy pulse
+    //  - max_false_pulse_cycles: the maximum number of cycles for each phase of the noisy pulse
+    // ---------------------------------------------------------------------
+    task automatic noisy_pulse(input int false_pulses, input int min_false_pulse_cycles, input int max_false_pulse_cycles );
         integer pulse_cycles;
-        time p_time;
+        //time p_time;
         @ (negedge clk);
+
+        // Create short toggles
         // $display("[%0t] noisy start at %0b", $time, tb_noisy);
         for (i=0; i<false_pulses; i=i+1) begin
             // Toggle the noisy signal and wait
@@ -40,18 +45,29 @@ module tb_debounce #(parameter CLK_FREQUENCY=100_000_000,
             pulse_cycles = $urandom_range(max_false_pulse_cycles, min_false_pulse_cycles);
             // $display("[%0t] noisy %b for %0d clocks", $time, tb_noisy, pulse_cycles);
             repeat (pulse_cycles) @ (negedge clk);
+
             // Toggle back to its original value and wait
             tb_noisy = ~tb_noisy;
             pulse_cycles = $urandom_range(max_false_pulse_cycles, min_false_pulse_cycles);
             // $display("[%0t] noisy %b for %0d clocks", $time, tb_noisy, pulse_cycles);
             repeat (pulse_cycles) @ (negedge clk);
         end
-        // Toggle to its new value
+
+        // Toggle to its new value and hold it stable 
         tb_noisy = ~tb_noisy;
         // Wait long enough for the debouncer to detect
         pulse_cycles = WAIT_CLOCKS + $urandom%min_false_pulse_cycles;
         // $display("[%0t] noisy to stabelize at %0b for %0d clocks", $time, tb_noisy, pulse_cycles);
         repeat (pulse_cycles) @ (negedge clk);
+
+        // We've held 'noisy' stable for about WAIT_CLOCKS cycles.
+        // If the DUT is correct, 'debounced' MUST match tb_noisy now.
+        if (tb_debounced !== tb_noisy) begin
+            $display("[%0t] *** ERROR: after %0d stable cycles, debounced(%0b) != tb_noisy(%0b) ***", 
+                     $time, pulse_cycles, tb_debounced, tb_noisy);
+            errors++;
+        end
+
         //$display("[%0t] noisy stabelized at %0b", $time, tb_noisy);
         @(negedge clk);
     endtask
@@ -59,11 +75,11 @@ module tb_debounce #(parameter CLK_FREQUENCY=100_000_000,
 
     // Instance the debounce DUT
     debounce #(.CLK_FREQUENCY(CLK_FREQUENCY),.WAIT_TIME_US(WAIT_TIME_US))
-    debounce(.clk(clk), .noisy(tb_noisy), .debounced(tb_debounced), .rst(reset));
+    debounce (.clk(clk), .noisy(tb_noisy), .debounced(tb_debounced), .rst(reset));
 
     // Oscilating clock
     initial begin
-        #105 // wait 105 ns before starting clock (after inputs have settled)
+        #105; // wait 105 ns before starting clock (after inputs have settled)
         clk = 0;
         forever begin
             #5 clk = ~clk;
@@ -87,6 +103,7 @@ module tb_debounce #(parameter CLK_FREQUENCY=100_000_000,
         max_error = 0;
         reset = 0;
 
+        // Reset Sequence
         repeat(3) @(negedge clk);
         reset = 1;
         repeat(3) @(negedge clk);
@@ -94,10 +111,11 @@ module tb_debounce #(parameter CLK_FREQUENCY=100_000_000,
         @(negedge clk);
         repeat(100) @(negedge clk);
 
+        // Generate pulses
         // Each iteration will create a zero to one transition and then a one to zero transition
         // of a noisy button.
 
-        for (j=0;j<NUMBER_OF_PULSES;j=j+1) begin
+        for (int j=0; j<NUMBER_OF_PULSES; j=j+1) begin
             noisy_pulse($urandom_range(5,2), MIN_BOUNCE_CLOCKS, MAX_BOUNCE_CLOCKS);
         end
 
@@ -106,8 +124,9 @@ module tb_debounce #(parameter CLK_FREQUENCY=100_000_000,
 
     end  // end initial begin
 
+    // "Too early"/"Too late" checks
     // Identify the last time that the noisy has transitioned
-    always@(posedge clk or posedge reset) begin
+    always @(posedge clk or posedge reset) begin
         if (reset) begin
             tb_noisy_d <= tb_noisy;
             tb_debounced_d <= tb_debounced;
@@ -115,6 +134,7 @@ module tb_debounce #(parameter CLK_FREQUENCY=100_000_000,
         end else begin
             tb_noisy_d <= tb_noisy;
             tb_debounced_d <= tb_debounced;
+
             if (tb_noisy_d != tb_noisy) begin
                 // First positive edge in which noisy and noisy_d are different (start of first clock)
                 clk_count <= 0;
@@ -123,6 +143,7 @@ module tb_debounce #(parameter CLK_FREQUENCY=100_000_000,
             end else begin
                 clk_count <= clk_count + 1;
             end
+
             if (tb_debounced_d != tb_debounced) begin
                 $display("[%0t] Debounce change to %0b after %0d clocks", $time, tb_debounced, clk_count);
                 if (clk_count < MIN_WAIT_CLOCKS) begin
