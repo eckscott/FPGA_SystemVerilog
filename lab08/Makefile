@@ -15,5 +15,5 @@ implement:
 	vivado -mode batch -source implement.tcl -log implement.log -nojournal -notrace
 
 clean:
-	rm -f *.bit *.jou *.txt *.pb *.wdb *.dcp *.log *.rpt
+	rm -f *.bit *.jou *.txt *.pb *.wdb *.dcp *.log *.rpt *.str
 	rm -rf xsim.dir/ .Xil/
