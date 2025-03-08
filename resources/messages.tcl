@@ -8,7 +8,7 @@
 ####################
 set_msg_config -new_severity "ERROR" -id "Synth 8-87"
 #INFO: [Synth 8-155] case statement is not full and has no default
-set_msg_config -new_severity "ERROR" -id "Synth 8-155"
+set_msg_config -new_severity "WARNING" -id "Synth 8-155"
 # Infer Latch
 set_msg_config -new_severity "ERROR" -id "Synth 8-327"
 set_msg_config -new_severity "ERROR" -id "Synth 8-3352"
