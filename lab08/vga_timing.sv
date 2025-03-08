@@ -6,7 +6,7 @@
 * Description: Contains the timing generator for the VGA controller
 *
 ***************************************************************************************/
-module vga_timing #(CLK_FREQUENCY=100_000_000)(
+module vga_timing (
     output logic[9:0] pixel_x, //column of current VGA pixel
     output logic[9:0] pixel_y, //row of current VGA pixel
     output logic h_sync, v_sync, //low asserted horizontal & vertical sync VGA signals
