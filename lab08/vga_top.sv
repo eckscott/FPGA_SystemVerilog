@@ -51,10 +51,12 @@ module vga_top (
 
     // MUX to decide what the color output should be
     always_comb begin
-        vgaRed = default_color[11:8];
-        vgaGreen = default_color[7:4];
-        vgaBlue = default_color[3:0];
-        if (btnr) begin
+        if (blank_flag) begin
+            vgaRed = 4'b0000;
+            vgaGreen = 4'b0000;
+            vgaBlue = 4'b0000;
+        end
+        else if (btnr) begin
             vgaRed = 4'b0000;
             vgaGreen = 4'b0000;
             vgaBlue = 4'b0000;
@@ -69,6 +71,11 @@ module vga_top (
             vgaGreen = sw[7:4];
             vgaBlue = sw[3:0];
         end
+        else begin
+            vgaRed = default_color[11:8];
+            vgaGreen = default_color[7:4];
+            vgaBlue = default_color[3:0];
+        end 
     end
 
     // Additional flip flops for Hsync and Vsync to remove any glitches in output
