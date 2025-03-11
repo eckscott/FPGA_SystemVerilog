@@ -1,10 +1,15 @@
 sim_debounce:
-	xvlog debounce.sv -sv --nolog
-	xelab debounce -debug typical --nolog
-	xsim debounce --nolog
+	xvlog debounce.sv tb_debounce.sv -sv --nolog
+	xelab tb_debounce -debug typical --nolog
+	xsim tb_debounce -log sim_debounce.log --runall
+
+sim_debounce_50:
+	xvlog debounce.sv tb_debounce.sv -sv --nolog
+	xelab --debug typical tb_debounce --generic_top "WAIT_TIME_US=50" --nolog
+	xsim tb_debounce -log sim_debounce.log --runall
 
 sim_vga_top:
-	xvlog vga_top.sv vga_timing.sv -sv --nolog
+	xvlog vga_top.sv debounce.sv -sv --nolog
 	xelab vga_top -debug typical --nolog
 	xsim vga_top -gui --nolog
 
