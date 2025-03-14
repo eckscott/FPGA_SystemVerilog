@@ -6,7 +6,7 @@ sim_debounce:
 sim_debounce_50:
 	xvlog debounce.sv tb_debounce.sv -sv --nolog
 	xelab --debug typical tb_debounce --generic_top "WAIT_TIME_US=50" --nolog
-	xsim tb_debounce -log sim_debounce.log --runall
+	xsim tb_debounce -log sim_debounce_50.log --runall
 
 sim_debounce_top:
 	xvlog debounce_top.sv debounce.sv -sv --nolog
