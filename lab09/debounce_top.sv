@@ -91,6 +91,7 @@ module debounce_top #(CLK_FREQUENCY=100_000_000, WAIT_TIME_US=5000,
     /********************************************* *
     *      CONNECT BOTH TO 7-SEGMENT DISPLAY       *
     ********************************************* */
+
     assign tot_count[7:0] = counter_db;
     assign tot_count[15:8] = counter;
     // instantiating sevenSegDisp as a module of a seven segment display to connect
