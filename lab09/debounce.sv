@@ -1,10 +1,10 @@
 /***************************************************************************
 * 
-* Filename: seven_segment4.sv
+* Filename: debounce.sv
 *
 * Author: Ethan Scott
-* Description: a multi-segment display controller that will drive the
-*              four-digit seven segment display on the Basys3 board
+* Description: A module using a debounce state machine to debounce button
+*              pushes
 *
 ****************************************************************************/
 module debounce #(CLK_FREQUENCY=100_000_000, WAIT_TIME_US=5000)(

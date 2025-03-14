@@ -8,10 +8,11 @@ sim_debounce_50:
 	xelab --debug typical tb_debounce --generic_top "WAIT_TIME_US=50" --nolog
 	xsim tb_debounce -log sim_debounce.log --runall
 
-sim_vga_top:
-	xvlog vga_top.sv debounce.sv -sv --nolog
-	xelab vga_top -debug typical --nolog
-	xsim vga_top -gui --nolog
+sim_debounce_top:
+	xvlog debounce_top.sv debounce.sv -sv --nolog
+	xvlog ../lab07/seven_segment4.sv -sv --nolog
+	xelab debounce_top -debug typical --nolog
+	xsim debounce_top -gui --nolog
 
 synth:
 	vivado -mode batch -source synth.tcl -log synthesis.log -nojournal -notrace
