@@ -12,7 +12,12 @@
 *
 ***************************************************************************************/
 module tx_top #(CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200,
-            REFRESH_RATE=19_200, WAIT_TIME_US=5_000)(ent
+            REFRESH_RATE=19_200, WAIT_TIME_US=5_000)(
+    output logic[7:0] segment,          // cathode signals for 7 seg display
+    output logic[3:0] anode,            // anode signals for 7 seg display
+    output logic tx_debug, sent, tx_out, // TX debug sig, TX sent sig, transmit sig
+    
+    input logic[7:0] sw,                // 8 slide swithces to specify character sent
     input logic clk, btnc, btnd);       // send character sig, reset character sig
 
     logic sync_btnc, sync_btnc1, sync_reset, sync_reset1; // sigs used to sync buttons

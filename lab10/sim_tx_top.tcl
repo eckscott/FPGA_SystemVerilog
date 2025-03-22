@@ -36,7 +36,7 @@ add_force btnd 0
 run 50 ns
 
 # Set the switches input value to 0xAA
-add_force sw 10101010
+add_force sw 01000101
 
 # Issue the reset and run for a couple clock cycles, then repeat with btnd deasserted
 add_force btnd 1
