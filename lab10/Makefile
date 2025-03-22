@@ -6,7 +6,7 @@ sim_tx:
 sim_tx_tb:
 	xvlog tx.sv tb_tx.sv -sv --nolog
 	xelab tb_tx -debug typical --nolog
-	xsim tb_tx -log sim_tx.log --runall
+	xsim tb_tx -log sim_tx_tb.log --runall
 
 sim_tx_top:
 	xvlog tx_top.sv tx.sv -sv --nolog
