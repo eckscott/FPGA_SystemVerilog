@@ -14,7 +14,7 @@ import repo_test
 
 def main():
     tester = test_suite_320.build_test_suite_320("lab12", max_repo_files = 30, start_date="03/31/2025")
-    tester.add_required_tracked_files(["charGen.sv","chargen_sim.tcl","chargen_sim.png", 
+    tester.add_required_tracked_files(["charGen.sv","sim_charGen.tcl","sim_charGen.png", 
                                        "chargen_top.sv", "sim_chargen_top.tcl", "sim_chargen_top.png", 
                                        "mymessage.txt","fontrom.png",])
     tester.add_Makefile_rule("sim_chargen_tb", ["charGen.sv"], ["sim_chargen_tb.log"])
