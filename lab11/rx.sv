@@ -12,7 +12,7 @@ module rx #(CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200)(
     output logic[7:0] Dout,
     // indicates the receiver now has a byte to hand off on Dout pins,
     // indicates there was a parity error. Valid when Receive is high          
-    output logic Receive, parityErr 
+    output logic Receive, parityErr,
     // 100MHZ clk, system rst active high, receiver serial input signal,
     // indicates that the host has accepted the byte on the Dout pins
     input logic clk, rst, Sin, ReceiveAck);    
@@ -54,7 +54,7 @@ module rx #(CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200)(
         end
     end
     assign timerDone = (timer == CLK_CYCLE_BAUD - 1);
-    assign timerHaflDone = (timer == (CLK_CYCLE_BAUD - 1) / 2);
+    assign timerHalfDone = (timer == ((CLK_CYCLE_BAUD - 1) / 2));
 
     // BLOCK #2
     // Bit counter responsible for counting number of data bits transmitted. Set to 0
@@ -88,7 +88,7 @@ module rx #(CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200)(
         end
     end
     assign Dout = bitReg[7:0];
-    assign parityErr = ((^Dout) ^ ODD) == Dout[8];
+    assign parityErr = (((^Dout) ^ ODD) == Dout[8]);
 
     // BLOCK #4
     // FSM used to determine receive process
