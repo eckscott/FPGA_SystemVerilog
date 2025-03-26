@@ -32,34 +32,35 @@ run 100 ns
 # Start with restart command
 add_force rst 1
 add_force ReceiveAck 0
-add_force Sin 1
+add_force Sin 0
 run 50 ns
 add_force rst 0
+add_force Sin 1
 run 50 ns
 
 # Emulate the transmission of the byte 0x41 (ASCII 'A') and correct ODD parity
 add_force Sin 0
-run 26 us
+run 52.083 us
 add_force Sin 1
-run 26 us
+run 52.083 us
 add_force Sin 0
-run 26 us
+run 52.083 us
 add_force Sin 0
-run 26 us
+run 52.083 us
 add_force Sin 0
-run 26 us
+run 52.083 us
 add_force Sin 0
-run 26 us
+run 52.083 us
 add_force Sin 0
-run 26 us
+run 52.083 us
 add_force Sin 1
-run 26 us
+run 52.083 us
 add_force Sin 1
-run 26 us
+run 52.083 us
 add_force Sin 1
-run 26 us
+run 52.083 us
 add_force Sin 1
-run 26 us
+run 52.083 us
 
 # run for another 100 us after end of serial transmission
 run 100 us
@@ -72,27 +73,27 @@ run 10 us
 
 # Emulate the transmission of the byte 0x5e (ASCII '^') and incorrect EVEN parity
 add_force Sin 0
-run 26 us
+run 52.083 us
 add_force Sin 0
-run 26 us
+run 52.083 us
 add_force Sin 1
-run 26 us
+run 52.083 us
 add_force Sin 1
-run 26 us
+run 52.083 us
 add_force Sin 1
-run 26 us
+run 52.083 us
 add_force Sin 1
-run 26 us
+run 52.083 us
 add_force Sin 0
-run 26 us
+run 52.083 us
 add_force Sin 1
-run 26 us
+run 52.083 us
 add_force Sin 0
-run 26 us
+run 52.083 us
 add_force Sin 1
-run 26 us
+run 52.083 us
 add_force Sin 1
-run 26 us
+run 52.083 us
 
 # run for another 100 us after end of serial transmission
 run 100 us
