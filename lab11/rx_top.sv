@@ -26,6 +26,8 @@ module rx_top #(CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200, REFRESH_RATE=19_200
     logic[7:0] received_data, ack_data, char_count;
     // data shown on the 7 segment disp
     logic[15:0] data_out;
+    // edge detector
+    logic ack_edge_sig1, ack_edge_sig2, ack_edge_sig;
 
     // blank none of the digits on the 7seg disp and display the 3rd decimal digit
     localparam BLANK = 4'b0000;
@@ -62,15 +64,24 @@ module rx_top #(CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200, REFRESH_RATE=19_200
     /*****************************************************
     *                    HAND SHAKING                    *
     *****************************************************/
-    // if the acknowledge sig is high, assign ack_data what is in received_data and
-    // parityErr with what is in rx_parityErr
+    // edge detect sync 1
+    always_ff @(posedge clk)
+        ack_edge_sig1 <= acknowledge;
+    // edge detect sync 2
+    always_ff @(posedge clk)
+        ack_edge_sig2 <= ack_edge_sig1;
+    // combination of 2 syncs
+    assign ack_edge_sig = (ack_edge_sig1 & ~ack_edge_sig2);
+    // Using the edge detector above, increment char_count on one instance of acknowledge
     always_ff @(posedge clk) begin
         if (sync_reset)
             char_count <= 0;
         else
-            if (acknowledge)
+            if (ack_edge_sig)
                 char_count <= char_count + 1;
     end 
+    // if the acknowledge sig is high, assign ack_data what is in received_data and
+    // parityErr with what is in rx_parityErr.
     always_comb begin
         ack_data = 0;
         parityErr = 0;
