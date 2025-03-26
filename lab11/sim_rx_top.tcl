@@ -1,6 +1,6 @@
 # /*************************************************************************************
 # *
-# * Filename: sim_rx.tcl
+# * Filename: sim_rx_top.tcl
 # * 
 # * author: Ethan Scott
 # * Description: This is a simulation of the rx module. See individual test case comments
