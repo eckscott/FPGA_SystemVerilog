@@ -11,7 +11,6 @@ sim_rx_tb:
 sim_rx_top:
 	xvlog rx_top.sv rx.sv -sv --nolog
 	xvlog ../lab07/seven_segment4.sv -sv --nolog
-	xvlog ../lab09/debounce.sv -sv --nolog
 	xelab rx_top -debug typical --nolog
 	xsim rx_top -gui -tclbatch sim_rx_top.tcl --nolog
 
