@@ -64,16 +64,6 @@ module rx_top #(CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200, REFRESH_RATE=19_200
     *****************************************************/
     // if the acknowledge sig is high, assign ack_data what is in received_data and
     // parityErr with what is in rx_parityErr
-    always_comb begin
-        ack_data = 0;
-        parityErr = 0;
-        if (acknowledge) begin
-            ack_data = received_data;
-            parityErr = rx_parityErr;
-        end
-    end 
-    // increment char_count every time acknowledge goes high, or when a character
-    // is received. Resets on the global reset button
     always_ff @(posedge clk) begin
         if (sync_reset)
             char_count <= 0;
@@ -81,6 +71,14 @@ module rx_top #(CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200, REFRESH_RATE=19_200
             if (acknowledge)
                 char_count <= char_count + 1;
     end 
+    always_comb begin
+        ack_data = 0;
+        parityErr = 0;
+        if (acknowledge) begin
+            ack_data = received_data;
+            parityErr = rx_parityErr;
+        end 
+    end
 
     /*****************************************************
     *                 SEVEN-SEG DISPLAY                  *
@@ -90,9 +88,7 @@ module rx_top #(CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200, REFRESH_RATE=19_200
     // character received count, and the bottom 2 digits display the character
     // received. As well, the 3rd digit point is turned on to separate the 2 counts
     seven_segment4 seven_seg_disp(.segment(segment), .anode(anode), .data_in(data_out),
-                                  .blank(BLANK), .dp_in(DP_3), .rst(rst), .clk(clk));
-    assign data_out[7:0] = ack_data;
-    assign data_out[15:8] = char_count;
-
+                                  .blank(BLANK), .dp_in(DP_3), .rst(sync_reset), .clk(clk));
+    assign data_out = {char_count, ack_data};
 
 endmodule
