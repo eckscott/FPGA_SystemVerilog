@@ -29,5 +29,5 @@ submit:
 	python3 lab11_passoff.py --submit
 
 clean:
-	rm -f *.bit *.jou *.rxt *.pb *.wdb *.dcp *.log *.rpt *.str
+	rm -f *.bit *.jou *.rxt *.pb *.wdb *.dcp *.log *.rpt *.str *.txt
 	rm -rf xsim.dir/ .Xil/
