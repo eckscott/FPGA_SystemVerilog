@@ -80,16 +80,22 @@ module rx_top #(CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200, REFRESH_RATE=19_200
             if (ack_edge_sig)
                 char_count <= char_count + 1;
     end 
-    // if the acknowledge sig is high, assign ack_data what is in received_data and
-    // parityErr with what is in rx_parityErr.
-    always_comb begin
-        ack_data = 0;
-        parityErr = 0;
-        if (ack_edge_sig) begin
-            ack_data = received_data;
-            parityErr = rx_parityErr;
-        end 
+    // if the acknowledge sig is high, assign ack_data what is in received_data
+    always_ff @(posedge clk) begin
+        if (sync_reset)
+            ack_data = 0;
+        else
+            if (acknowledge)
+                ack_data = received_data;
     end
+    // if the acknowledge sig is high, assign parityErr what is in rx_parityErr
+    always_ff @(posedge clk) begin
+        if (sync_reset)
+            parityErr = 0;
+        else
+            if (acknowledge)
+                parityErr = rx_parityErr;
+    end 
 
     /*****************************************************
     *                 SEVEN-SEG DISPLAY                  *
