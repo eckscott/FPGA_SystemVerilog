@@ -20,6 +20,14 @@ synth:
 implement:
 	vivado -mode batch -source implement.tcl -log implement.log -nojournal -notrace
 
+update:
+	git fetch startercode
+	git merge startercode/main -m "Merging starter code"
+	git push
+
+submit:
+	python3 lab11_passoff.py --submit
+
 clean:
 	rm -f *.bit *.jou *.rxt *.pb *.wdb *.dcp *.log *.rpt *.str
 	rm -rf xsim.dir/ .Xil/

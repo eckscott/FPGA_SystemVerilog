@@ -88,7 +88,7 @@ module rx #(CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200)(
         end
     end
     assign Dout = bitReg[7:0];
-    assign parityErr = (((^Dout) ^ ODD) == Dout[7]);
+    assign parityErr = ~((^Dout)^bitReg[8]);
 
     // BLOCK #4
     // FSM used to determine receive process
