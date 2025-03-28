@@ -1,4 +1,4 @@
-// cnt1.sv
+// cnt4.sv
 
 module cnt(input logic clk, rst, en, up, load, 
     input logic [3:0] count_in,
@@ -7,7 +7,8 @@ module cnt(input logic clk, rst, en, up, load,
     always @(posedge clk)
         if (rst)
             count <= 0;
-        else if (load)
+        else if (en)
+            if (load)
                 count <= count_in;
             else if (up)
                 count <= count + 1;
