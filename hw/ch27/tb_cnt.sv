@@ -15,7 +15,13 @@ module tb_cnt.sv();
     cnt CountMod(clk, rst, en, up, load, count_in, count);
 
     initial begin
-        
+        #100ns;
+        clk = 0;
+        forever begin
+            #5ns clk = ~clk;
+        end
+        #100ns;
     end
+    
 
 endmodule
