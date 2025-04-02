@@ -14,6 +14,8 @@ module tb_cnt.sv();
 
     cnt DUT(clk, rst, en, up, load, count_in, count);
 
+    function void 
+
     initial begin
         #100ns;
         clk = 0;
@@ -35,6 +37,12 @@ module tb_cnt.sv();
         rst = 1;
         repeat(4) @(negedge clk);
         rst = 0;
+    end
+    // test counting functionality
+    initial begin
+        en = 1;
+        up = 1;
+        
     end
 
 endmodule
