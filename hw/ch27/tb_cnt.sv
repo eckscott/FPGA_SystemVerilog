@@ -10,7 +10,7 @@
 module tb_cnt.sv();
 
     
-    logic clk, load, clr;
+    logic clk, load;
     logic [2:0] addr;
     logic [3:0] din, q;
     integer i,errors;
