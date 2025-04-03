@@ -33,6 +33,11 @@ module tb_cnt.sv();
         end
         #100ns;
     end
+    //give load signal precendence
+    always begin
+        if (!rst && load)
+            count = count_in;
+    end
     // test functionality of reset
     initial begin
         // initial values for testing
