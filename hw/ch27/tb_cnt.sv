@@ -15,7 +15,15 @@ module tb_cnt.sv();
 
     cnt DUT(clk, rst, en, up, load, count_in, count);
 
-    function void 
+    task countTimes (int num_counts);
+        for (i=0; i < num_counts + 1; i=i+1) begin
+            if (count != i) begin
+                $display("ERROR: Incorrect count val. Should be '%1d' but is '%1d' at time %0t", i, count, $time);
+                errors = errors + 1;
+            end
+            @(negedge clk);
+        end 
+    endtask
 
     initial begin
         #100ns;
@@ -44,17 +52,30 @@ module tb_cnt.sv();
     initial begin
         en = 1;
         up = 1;
-        for (i=0; i < 16; i=i+1) begin
-            if (count != i) begin
-                $display("ERROR: Incorrect count val. Should be '%1d' but is '%1d' at time %0t", i, count, $time);
-                errors = errors + 1;
-            end
-            @(negedge clk);
-        end 
-        if (count != 0)
+        countTimes(15);
+        if (count != 0) begin
             $display("ERROR: Failed to roll back to 0. Count should be '0' but is '%1d' at time %0t, count, $time);
+            errors = errors + 1;
+        end
         else
             $display("Test Roll back to 0: SUCCESS");
+    end
+    // test count down functionality
+    initial begin
+        // Issue a reset for a few clock cycles and release the reset
+        rst = 1;
+        up = 0;
+        en = 0;
+        repeat(4) @(negedge clk);
+        rst = 0;
+        // make sure count stays at 0 when en goes high
+        en = 1;
+        countTimes(5);
+        // make sure count can count down from 15
+        up = 1;
+        countTimes(14);
+        up = 0;
+        countTimes(14);     
     end
 
 endmodule
