@@ -54,7 +54,7 @@ module tb_cnt.sv();
         up = 1;
         countTimes(15);
         if (count != 0) begin
-            $display("ERROR: Failed to roll back to 0. Count should be '0' but is '%1d' at time %0t, count, $time);
+            $display("ERROR: Failed to roll back to 0. Count should be '0' but is '%1d' at time %0t", count, $time);
             errors = errors + 1;
         end
         else
