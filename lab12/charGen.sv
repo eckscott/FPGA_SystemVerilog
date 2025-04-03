@@ -24,8 +24,6 @@ module charGen #(FILENAME="")(
     // Character write enable, 100MHz system Clock
     input logic char_we, clk);
 
-    //
-    logic[11:0]char_mem_addr;
     // character memory array 
     logic[7:0] mem_data[0:4095];
     // determines which location in the mem_data to to read
@@ -51,16 +49,11 @@ module charGen #(FILENAME="")(
         $readmemh(FILENAME, mem_data, 0);
     end
 
-    // a synchronous write port for the character addr triggered by char_we
-    always_ff @(posedge clk)
-        if (char_we)
-            char_mem_addr <= char_addr;
-
     // a syncrhonous write port for the characer val in mem_data triggered by char_we
     always_ff @(posedge clk) begin
         if (char_we)
-            mem_data[char_mem_addr] <= {1'b0, char_value};
-        char_read_value <= mem_data[char_mem_addr - 1];         // THIS THE PROBLEM!!! WHY IS CHAR_READ_VALUE NOT READING ANYTHING ON THE TB!
+            mem_data[char_addr] <= {1'b0, char_value};
+        char_read_value <= mem_data[char_read_addr]; 
     end
 
     // a read port for the character addr
@@ -105,8 +98,10 @@ module charGen #(FILENAME="")(
             3'b101: pixel_out = rom_data[2];
             3'b110: pixel_out = rom_data[1];
             3'b111: pixel_out = rom_data[0];
+            default:
+                pixel_out = 0;
         endcase
-    end 
+    end
     
 
     
