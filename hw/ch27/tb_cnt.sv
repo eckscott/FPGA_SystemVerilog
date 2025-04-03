@@ -11,6 +11,7 @@ module tb_cnt.sv();
 
     logic clk, rst, en, up, load;
     logic[3:0] count_in, count;
+    int i;
 
     cnt DUT(clk, rst, en, up, load, count_in, count);
 
@@ -42,6 +43,18 @@ module tb_cnt.sv();
     initial begin
         en = 1;
         up = 1;
+        for (i=0; i < 16; i=i+1) begin
+            if (count == i)
+                @(negedge clk);
+            else begin
+                $display("Incorrect count val. Should be '%1d' but is '%1d' at time %0t", i, count, $time);
+                $finish;
+            end
+        end 
+        if (count == 0)
+            $display("Count from 0 to 15 and roll over back to 0 success!);
+        else
+            $display("Failed
         
     end
 
