@@ -20,7 +20,7 @@ module charGen #(FILENAME="")(
     // The row address of the current pixel
     input logic[8:0] pixel_y,
     // The 8-bit value to write into the character memory
-    input logic[7:0] char_value,
+    input logic[6:0] char_value,
     // Character write enable, 100MHz system Clock
     input logic char_we, clk);
 
@@ -57,17 +57,14 @@ module charGen #(FILENAME="")(
             char_mem_addr <= char_addr;
 
     // a syncrhonous write port for the characer val in mem_data triggered by char_we
-    always_ff @(posedge clk)
+    always_ff @(posedge clk) begin
         if (char_we)
-            mem_data[char_mem_addr] <= char_value;
+            mem_data[char_mem_addr] <= {1'b0, char_value};
+        char_read_value <= mem_data[char_mem_addr - 1];         // THIS THE PROBLEM!!! WHY IS CHAR_READ_VALUE NOT READING ANYTHING ON THE TB!
+    end
 
-    // a synchronous read port for the character addr
-    always_ff @(posedge clk)
-        char_read_addr <= {pixel_y[8:4], pixel_x[9:3]};
-
-    // a synchonous read port for the character val
-    always_ff @(posedge clk)
-        char_read_value <= {pixel_y[3:0], pixel_x[2:0]};
+    // a read port for the character addr
+    assign char_read_addr = {pixel_y[8:4], pixel_x[9:3]};
 
     /***********************************************************
     ***********           FONT ROM                   ***********
