@@ -3,13 +3,13 @@ sim_charGen:
 	xelab charGen -debug typical --nolog
 	xsim charGen -tclbatch sim_charGen.tcl --nolog
 
-sim_charGen_tb:
+sim_chargen_tb:
 	xvlog charGen.sv font_rom.sv tb_charGen.sv -sv --nolog
 	xelab tb_charGen -debug typical --nolog
-	xsim tb_charGen -gui --nolog
+	xsim tb_charGen -log sim_chargen_tb.log
 
 sim_charGen_top:
-	xvlog charGen_top.sv charGen.sv -sv --nolog
+	xvlog chargen_top.sv charGen.sv font_rom -sv --nolog
 	xvlog ../lab07/seven_segment4.sv -sv --nolog
 	xelab charGen_top -debug typical --nolog
 	xsim charGen_top -gui -tclbatch sim_charGen_top.tcl --nolog
