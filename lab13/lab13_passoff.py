@@ -16,7 +16,7 @@ def main():
     tester = test_suite_320.build_test_suite_320("lab13", max_repo_files = 30, start_date="04/7/2025")
     tester.add_required_tracked_files(["codebreaker.sv","codebreaker_top.sv",
                                        "sim_decrypt_rc4.tcl", "sim_decrypt_rc4.png", "background.txt",
-                                       "sim_codebreaker_top.tcl", "chargen_top.png", "cipher_update.png", "write_vga.png", 
+                                       "sim_codebreaker_top.tcl", "codebreaker_top.png", "cipher_update.png", "write_vga.png", 
                                        ])
     tester.add_Makefile_rule("sim_tb_codebreaker", ["codebreaker.sv"], ["sim_tb_codebreaker.log"])
     tester.add_build_test(repo_test.file_regex_check("sim_tb_codebreaker.log", "SUCCESS: Key found: 000005", 
