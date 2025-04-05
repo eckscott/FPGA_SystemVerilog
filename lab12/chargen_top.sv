@@ -3,10 +3,13 @@
 * Filename: chargen_top.sv
 *
 * Author: Ethan Scott
-* Description: 
+* Description: This is the character generator top level module. This module generates
+*              characters and displays it on the VGA display using either UART
+*              transmission or displaying the ASCII value as given by the swithces on a
+*              BASYS3 FPGA. 
 *
 ***************************************************************************************/
-module charGen #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200,
+module chargen_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200,
                  WAIT_TIME_US=5_000, REFRESH_RATE=200)(
     //cathode and anode signals for digits of seven segment display
     output logic[7:0] segment, output logic[3:0] anode,
@@ -53,7 +56,7 @@ module charGen #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200,
 
     // UART sigs
     logic[7:0] rx_out;
-    logic par_err, sin, ack;
+    logic par_err, ack;
 
     // VGA color sigs
     logic[3:0] r, g, b;
@@ -73,7 +76,7 @@ module charGen #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200,
         fore_clr_sync <= fore_clr_sync1;
         back_clr_sync <= back_clr_sync1;
         char_we_sync <= char_we_sync1;
-        rst_sync <= rx_sync1;
+        rst_sync <= rst_sync1;
     end
 
     /*****************************************************
@@ -114,7 +117,7 @@ module charGen #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200,
     // if the write signal is asserted. Using pix_x and pix_y from the previous module
     // instantiation, it can output the correct pixel output (either 1 or 0) based on
     // a font ROM and the character value that is being written
-    charGen charGen(.pixel_out(pix_out), .char_addr(char_addr), .pixel_x(pix_x),            /////////////////////////////////
+    charGen charGenerator(.pixel_out(pix_out), .char_addr(char_addr), .pixel_x(pix_x),      /////////////////////////////////
                     .pixel_y(pix_y), .char_value(char_val), .char_we(write),                ///// PIX_Y IS SIZE 10 BUT //////
                     .clk(clk));                                                             ///// PIXEL_Y IS SIZE 9    //////
                                                                                             /////////////////////////////////
@@ -124,7 +127,7 @@ module charGen #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200,
     // UART receiver module used to receive a character into the input Sin as an
     // alternate way of writting a character to the display, based off of user input
     rx UARTReceiver(.Dout(rx_out), .Receive(ack), .parityErr(par_err), .clk(clk),
-                    .rst(rst_sync), .Sin(sin), .ReceiveAck(ack));
+                    .rst(rst_sync), .Sin(rx_sync), .ReceiveAck(ack));
 
     /*****************************************************
     *               Write Char to Display                *
@@ -156,7 +159,7 @@ module charGen #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200,
     always_ff @(posedge clk)
         f2_db <= f1_db;
     // combination of 2 syncs
-    assign pulse_out_we = (f1_db & ~f2_db);
+    assign pulse_out_we = (f1_db && ~f2_db);
 
     // assert the write signal if the debounced btnc signal is pushed or if the UART
     // receives a signal. If not, do not assert the write signal

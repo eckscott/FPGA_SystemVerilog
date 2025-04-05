@@ -8,11 +8,14 @@ sim_chargen_tb:
 	xelab tb_charGen -debug typical --nolog
 	xsim tb_charGen -log sim_chargen_tb.log
 
-sim_charGen_top:
-	xvlog chargen_top.sv charGen.sv font_rom -sv --nolog
+sim_chargen_top:
+	xvlog chargen_top.sv charGen.sv font_rom.sv -sv --nolog
 	xvlog ../lab07/seven_segment4.sv -sv --nolog
-	xelab charGen_top -debug typical --nolog
-	xsim charGen_top -gui -tclbatch sim_charGen_top.tcl --nolog
+	xvlog ../lab08/vga_timing.sv -sv --nolog
+	xvlog ../lab09/debounce.sv -sv --nolog
+	xvlog ../lab11/rx.sv -sv --nolog
+	xelab --debug typical chargen_top --generic_top "WAIT_TIME_US=50" --nolog
+	xsim chargen_top -gui -tclbatch sim_chargen_top.tcl --nolog
 
 synth:
 	vivado -mode batch -source synth.tcl -log synthesis.log -nojournal -notrace
@@ -29,5 +32,5 @@ submit:
 	python3 lab11_passoff.py --submit
 
 clean:
-	rm -f *.bit *.jou *.charGent *.pb *.wdb *.dcp *.log *.rpt *.str *.txt
+	rm -f *.bit *.jou *.charGent *.pb *.wdb *.dcp *.log *.rpt *.str *.txt *.mem
 	rm -rf xsim.dir/ .Xil/
