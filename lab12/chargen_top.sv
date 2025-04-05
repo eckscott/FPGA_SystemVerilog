@@ -117,10 +117,10 @@ module chargen_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200,
     // if the write signal is asserted. Using pix_x and pix_y from the previous module
     // instantiation, it can output the correct pixel output (either 1 or 0) based on
     // a font ROM and the character value that is being written
-    charGen charGenerator(.pixel_out(pix_out), .char_addr(char_addr), .pixel_x(pix_x),      /////////////////////////////////
-                    .pixel_y(pix_y), .char_value(char_val), .char_we(write),                ///// PIX_Y IS SIZE 10 BUT //////
-                    .clk(clk));                                                             ///// PIXEL_Y IS SIZE 9    //////
-                                                                                            /////////////////////////////////
+    charGen charGenerator(.pixel_out(pix_out), .char_addr(char_addr), .pixel_x(pix_x),
+                    .pixel_y(pix_y), .char_value(char_val), .char_we(write),
+                    .clk(clk));     
+                              
     /*****************************************************
     *                  UART RECEIVER                     *
     *****************************************************/

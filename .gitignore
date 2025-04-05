@@ -3,6 +3,7 @@
 **/*.bit
 **/*.jou
 **/*.txt
+!mymessage.txt
 **/*.pb
 **/*.wdb
 **/*.dcp
