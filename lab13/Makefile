@@ -3,10 +3,10 @@ sim_decrypt_rc4:
 	xelab decrypt_rc4 -debug typical --nolog
 	xsim decrypt_rc4 -gui -tclbatch sim_decrypt_rc4.tcl --nolog 
 
-sim_chargen_tb:
-	xvlog decrypt_rc4.sv font_rom.sv tb_charGen.sv -sv --nolog
-	xelab tb_charGen -debug typical --nolog
-	xsim tb_charGen -log sim_chargen_tb.log --runall
+sim_tb_codebreaker:
+	xvlog decrypt_rc4.sv codebreaker.sv tb_codebreaker.sv -sv --nolog
+	xelab tb_codebreaker -debug typical --nolog
+	xsim tb_codebreaker -log sim_chargen_tb.log -gui
 
 sim_chargen_top:
 	xvlog chargen_top.sv decrypt_rc4.sv font_rom.sv -sv --nolog
@@ -32,7 +32,10 @@ update:
 	git push
 
 submit:
-	python3 lab12_passoff.py --submit
+	python3 lab13_passoff.py --submit
+
+download:
+	python3 ../resources/openocd.py chargen_top.bit
 
 clean:
 	rm -f *.bit *.jou *.charGent *.pb *.wdb *.dcp *.log *.rpt *.str *.mem

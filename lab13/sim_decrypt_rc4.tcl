@@ -24,7 +24,7 @@ if { [string length $curr_wave] == 0 } {
 }
 
 #Start with the ‘restart’ command
-
+restart
 
 #Create an oscillating clock signal with a period of 10ns
 add_force clk {0 0} {1 5ns} -repeat_every 10ns
@@ -33,10 +33,11 @@ add_force clk {0 0} {1 5ns} -repeat_every 10ns
 add_force reset 1
 
 #Set default values for the signals and run for a few clock cycles
-add_force enable 1
+add_force enable 0
 add_force key 0
 add_force bytes_in 0
 run 30 ns
+add_force reset 0
 
 #Run the decrypt function by setting enable to ‘1’ with the following inputs:
 #Key = 24’h010203
@@ -58,6 +59,7 @@ run 1 us
 add_force bytes_in -radix hex 0f844e5b0b4e42d35d063c6a1a5a1524
 add_force key -radix hex 3fe21b
 add_force enable 1
+run 11 us
 
 #Set enable to ‘0’ and run for 1 us
 add_force enable 0

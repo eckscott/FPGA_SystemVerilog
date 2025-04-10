@@ -9,8 +9,8 @@
 *              BASYS3 FPGA. 
 *
 ***************************************************************************************/
-module chargen_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200,
-                 WAIT_TIME_US=5_000, REFRESH_RATE=200)(
+module chargen_top #(parameter FILENAME="", parameter CLK_FREQUENCY=100_000_000, parameter BAUD_RATE=19_200,
+                 parameter WAIT_TIME_US=5_000, parameter REFRESH_RATE=200)(
     //cathode and anode signals for digits of seven segment display
     output logic[7:0] segment, output logic[3:0] anode,
     // RGB color signals
@@ -41,8 +41,8 @@ module chargen_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200,
     logic[15:0] seven_seg_data;
 
     // background/foreground clr signals
-    logic [11:0] foreground_color;
-    logic [11:0] background_color;
+    logic [11:0] foreground_color = WHITE;
+    logic [11:0] background_color = BLACK;
 
     // VGA Timing Controller and Character Generator signals
     logic[9:0] pix_x, pix_y;
@@ -64,20 +64,38 @@ module chargen_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200,
     // synchronizer 1
     always_ff @(posedge clk) begin
         rx_sync1 <= rx_in;
-        fore_clr_sync1 <= btnr;
-        back_clr_sync1 <= btnl;
-        char_we_sync1 <= btnc;
-        rst_sync1 <= btnd;
-        sw_sync <= sw;
+        rx_sync <= rx_sync1;  
     end
+
     // synchronizer 2
     always_ff @(posedge clk) begin
-        rx_sync <= rx_sync1;
-        fore_clr_sync <= fore_clr_sync1;
+        fore_clr_sync1 <= btnr;
+        fore_clr_sync <= fore_clr_sync1;      
+    end
+
+    // 
+    always_ff @(posedge clk) begin
+        back_clr_sync1 <= btnl;
         back_clr_sync <= back_clr_sync1;
+    end
+
+    // 
+    always_ff @(posedge clk) begin
+        char_we_sync1 <= btnc;
         char_we_sync <= char_we_sync1;
+    end
+
+    // 
+    always_ff @(posedge clk) begin
+        rst_sync1 <= btnd;
         rst_sync <= rst_sync1;
     end
+
+    // 
+    always_ff @(posedge clk) begin
+        sw_sync <= sw;
+    end
+
 
     /*****************************************************
     *                 SEVEN-SEG DISPLAY                  *
@@ -96,13 +114,16 @@ module chargen_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200,
     *****************************************************/
     // if btnl is pressed, background color = value of switches, default = black
     // if btnr is pressed, foreground color = value of swithces, default = white
-    always_comb begin
-        foreground_color = WHITE;
-        background_color = BLACK;
-        if (fore_clr_sync)
-            foreground_color = sw_sync;
-        if (back_clr_sync)
-            background_color = sw_sync;
+    always_ff @(posedge clk) begin
+        if (rst_sync) begin
+            foreground_color <= WHITE;
+            background_color <= BLACK;
+        end
+        else
+            if (fore_clr_sync)
+                foreground_color <= sw_sync;
+            if (back_clr_sync)
+                background_color <= sw_sync;
     end
 
     /*****************************************************
@@ -111,14 +132,14 @@ module chargen_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200,
     // vga timing module used to get pixel values of x and y and the necessary Hsync and
     // Vsync signals to make the character display work on the VGA display
     vga_timing VGA(.pixel_x(pix_x), .pixel_y(pix_y), .h_sync(h_sync1), .v_sync(v_sync1),
-                   .blank(vga_blank), .clk(clk), .rst(rst_sync));
+                   .blank(vga_blank), .last_column(), .last_row(), .clk(clk), .rst(rst_sync));
 
     // Character generator module used to write a character value at a certain address
     // if the write signal is asserted. Using pix_x and pix_y from the previous module
     // instantiation, it can output the correct pixel output (either 1 or 0) based on
     // a font ROM and the character value that is being written
-    charGen charGenerator(.pixel_out(pix_out), .char_addr(char_addr), .pixel_x(pix_x),
-                    .pixel_y(pix_y), .char_value(char_val), .char_we(write),
+    charGen #(.FILENAME(FILENAME)) charGenerator (.pixel_out(pix_out), .char_addr(char_addr), .pixel_x(pix_x),
+                    .pixel_y(pix_y[8:0]), .char_value(char_val), .char_we(write),
                     .clk(clk));     
                               
     /*****************************************************
@@ -136,14 +157,16 @@ module chargen_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200,
     // every time a character is written
     always_ff @(posedge clk) begin
         if (rst_sync)
-            char_addr = 0;
+            char_addr <= 0;
         else if (write)
             if (char_addr[6:0] < 79)
-                char_addr = char_addr + INC_COL;
-            if (char_addr[6:0] == 79)
-                char_addr = char_addr + INC_ROW;
-            if ((char_addr[6:0] == 79) && (char_addr[11:7] == 29))
-                char_addr = 0;
+                char_addr <= char_addr + INC_COL;
+            if (char_addr[6:0] == 79) begin
+                char_addr <= char_addr + INC_ROW;
+                char_addr[6:0] <= 0;
+            end
+            if (char_addr == 12'b111011001111)
+                char_addr <= 0;
     end
     
     // debounce module that debouces the char_we_sync signal so that only one character
@@ -213,7 +236,7 @@ module chargen_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_200,
     // additional syncs for hsync and v sync sigs to match up with RGB
     always_ff @(posedge clk) begin
         h_sync <= h_sync2;
-        v_sync <= h_sync2;
+        v_sync <= v_sync2;
     end
     // final sync register for hsync and vsync
     always_ff @(posedge clk) begin
