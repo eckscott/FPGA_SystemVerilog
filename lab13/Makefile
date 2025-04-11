@@ -17,8 +17,8 @@ sim_chargen_top:
 	xelab --debug typical chargen_top --generic_top "WAIT_TIME_US=50" --nolog
 	xsim chargen_top -gui -tclbatch sim_chargen_top.tcl --nolog
 
-mymessage.mem:
-	python3 gen_initial_chars.py mymessage.txt mymessage.mem
+background.mem:
+	python3 gen_initial_chars.py background.txt background.mem
 
 synth:
 	vivado -mode batch -source synth.tcl -log synthesis.log -nojournal -notrace
@@ -40,4 +40,4 @@ download:
 clean:
 	rm -f *.bit *.jou *.charGent *.pb *.wdb *.dcp *.log *.rpt *.str *.mem
 	rm -rf xsim.dir/ .Xil/
-	find . -name "*.txt" ! -name "mymessage.txt" -exec rm -f {} \;
+	find . -name "*.txt" ! -name "background.txt" -exec rm -f {} \;

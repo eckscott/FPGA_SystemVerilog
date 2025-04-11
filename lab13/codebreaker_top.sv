@@ -45,6 +45,18 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
     // synced signals to display ciphertext and plain text on 7seg display
     logic ciphTxtDisp_sync, ciphTxtDisp_sync1, plainTxtDisp_sync, plainTxtDisp_sync1;
 
+    // pixel x and y signals for vga timing module and charGen module
+    logic[9:0] pix_x, pix_y;
+    // Input signals for charGen module
+    logic[11:0] charAddr; logic[7:0] charData; logic writechar;
+    // signals to indicate when there is a new frame
+    logic new_frame, last_column, last_row;
+
+    // signals used for the vga color
+    logic[3:0] r, g, b;
+    logic vga_blank, h_sync, h_sync1, h_sync2, v_sync, v_sync1, v_sync2;
+    logic pix_out;
+
     // 2 flip flop synchronizer for reset signal
     always_ff @(posedge clk) begin
         rst_sync1 <= btnd;
@@ -114,6 +126,11 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
     seven_segment4 sevenSegDisp(.segment(segment), .anode(anode), .data_in(sevenSegData),
                                 .blank(), .dp_in(), .rst(rst_sync), .clk(clk));
 
+    // block to decide what data to display on the seven segment display. If btnl is
+    // pressed, display certain bits of the cipherTxt depending on the value of the
+    // switches. If btnr is pressed, display certain bits of the plainTxt depending
+    // on the value of the switches. If no buttons are pressed, display the top
+    // 16 bits of the key
     always_comb begin
         if (ciphTxtDisp_sync) begin
             case (sw_sync)
@@ -127,6 +144,86 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
                 3'b111: sevenSegData = ciphTxt[127:112];
             endcase
         end
+        else if (plainTxtDisp_sync) begin
+            case (sw_sync)
+                3'b000: sevenSegData = plainTxt[15:0];
+                3'b001: sevenSegData = plainTxt[31:16];
+                3'b010: sevenSegData = plainTxt[47:32];
+                3'b011: sevenSegData = plainTxtt[63:48];
+                3'b100: sevenSegData = plainTxt[79:64];
+                3'b101: sevenSegData = plainTxt[95:80];
+                3'b110: sevenSegData = plainTxt[111:96];
+                3'b111: sevenSegData = plainTxt[127:112];
+            endcase
+        end 
+        else
+            sevenSegData = keyCorrect[23:8];
+    end
+
+
+    /*****************************************************
+    *                   VGA DISPLAY                      *
+    *****************************************************/
+
+
+    vga_timing VGA(.pixel_x(pix_x), .pixel_y(pix_y), .h_sync(h_sync), .v_sync(v_sync),
+                   .blank(vga_blank), .last_column(last_column), .last_row(last_row), .clk(clk), .rst(rst_sync));
+
+    charGen #(.FILENAME(FILENAME)) charGenerator (.pixel_out(pix_out), .char_addr(charAddr), .pixel_x(pix_x),
+                    .pixel_y(pix_y[8:0]), .char_value(charData[6:0]), .char_we(writeChar),
+                    .clk(clk));
+
+    write_vga vgaWrite(.write_char(writeChar), .char_data(charData),
+                       .char_addr(charAddr), .key(keyCorrect), .plaintext(plainTxt),
+                       .ciphertext(ciphTxt), .write_display(new_frame), .rst(rst_sync),
+                       .clk(clk));
+
+    assign new_frame = last_column & last_row;
+
+
+    /*****************************************************
+    *                  VGA color signals                 *
+    *****************************************************/
+
+
+    // set RGB to BACKGROUND_COLOR if blank sig asserted. If not, set them to the 
+    // background color unless the pix_out signal is asserted, then set them to
+    //  foreground color
+    always_comb begin
+        if (vga_blank) begin
+            r = BACKGROUND_COLOR[11:8];
+            g = BACKGROUND_COLOR[7:4];
+            b = BACKGROUND_COLOR[3:0];
+        end
+        else
+            if (pix_out) begin
+                r = FOREGROUND_COLOR[11:8];
+                g = FOREGROUND_COLOR[7:4];
+                b = FOREGROUND_COLOR[3:0];
+            end
+            else begin
+                r = BACKGROUND_COLOR[11:8];
+                g = BACKGROUND_COLOR[7:4];
+                b = BACKGROUND_COLOR[3:0];
+            end
+    end
+
+    // output synchronization to ensure no glitches
+    always_ff @(posedge clk) begin
+        vgaRed <= r;
+        vgaGreen <= g;
+        vgaBlue <= b;
+    end
+
+    // additional syncs for hsync and v sync sigs to match up with RGB
+    always_ff @(posedge clk) begin
+        h_sync1 <= h_sync;
+        h_sync2 <= h_sync1;
+        Hsync <= h_sync2;
+        
+        v_sync1 <= v_sync;
+        v_sync2 <= v_sync1;
+        Vsync <= v_sync2;
     end
 
 endmodule
