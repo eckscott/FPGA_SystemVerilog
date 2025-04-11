@@ -40,6 +40,9 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
     // done signal to indicate encryption/decryption process finished
     logic codeBreakDone;
 
+    // synce signals for btnc to start codebreak
+    logic start_sync1, start_sync, start_db, f1_db, f2_db, start_edge;
+
     // data displayed on the seven-segment display
     logic[15:0] sevenSegData;
     // synced signals to display ciphertext and plain text on 7seg display
@@ -96,13 +99,30 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
     *****************************************************/
 
 
+    // synchronizer for btnc
+    always_ff @(posedge clk) begin
+        start_sync1 <= btnc;
+        start_sync <= start_sync1;
+    end
+
+    // This debounce module debounces the synchronized btnc that is used as the start
+    // signal to indicate to the codebreaker that it is time to start decoding
+    debounce #(.CLK_FREQUENCY(CLK_FREQUENCY), .WAIT_TIME_US(WAIT_TIME_US)) debouncer (
+               .debounced(start_db), .clk(clk), .rst(rst_sync), .noisy(start_sync));
+
+    // edge detector to verify one button push counts as 1 and doesn't increment 4ever
+    always_ff @(posedge clk)
+        f1_db <= start_db;
+        f2_db <= f1_db;
+    assign start_edge = (f1_db & ~f2_db);
+
     // This codebreaker module takes a cipherTxt as an input and generates a plainTxt
     // as an output once it finds a key that can decipher the code. It raises a signal
     // 'codeBreakDone' once it finishes deciphering, or a signal 'error' if it couldn't
     // crack the code. Runs through this process on the raising of the start signal
-    codebreaker codeBreak(.bytes_in(ciphTxt), .clk(clk), .reset(rst_sync), .start(),
-                          .bytes_out(plainTxt), .key(keyCorrect), .done(codeBreakDone),
-                          .error(error));
+    codebreaker codeBreak(.bytes_in(ciphTxt), .clk(clk), .reset(rst_sync),
+                          .start(start_edge), .bytes_out(plainTxt), .key(keyCorrect),
+                          .done(codeBreakDone), .error(error));
 
 
     /*****************************************************
@@ -123,7 +143,8 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
 
     // This seven segment display module displays the current key, ciphertext, and the
     // plain text on the seven segment display depending on which button is pushed
-    seven_segment4 sevenSegDisp(.segment(segment), .anode(anode), .data_in(sevenSegData),
+    seven_segment4 #(.CLK_FREQUENCY(CLK_FREQUENCY), .REFRESH_RATE(REFRESH_RATE))
+                   sevenSegDisp(.segment(segment), .anode(anode), .data_in(sevenSegData),
                                 .blank(), .dp_in(), .rst(rst_sync), .clk(clk));
 
     // block to decide what data to display on the seven segment display. If btnl is
@@ -160,25 +181,37 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
             sevenSegData = keyCorrect[23:8];
     end
 
+    // LED 0-7 displays the lower 8 bits of the key
+    assign led = keyCorrect[7:0];
+
 
     /*****************************************************
     *                   VGA DISPLAY                      *
     *****************************************************/
 
 
+    // This vga_timing module is used for the vga timing. It outputs pix_x and pix_y
+    // indicating the current x,y location. As well, it outputs last_column and last_row
+    // signals that are used to tell when a new frame needs to be produced
     vga_timing VGA(.pixel_x(pix_x), .pixel_y(pix_y), .h_sync(h_sync), .v_sync(v_sync),
-                   .blank(vga_blank), .last_column(last_column), .last_row(last_row), .clk(clk), .rst(rst_sync));
+                   .blank(vga_blank), .last_column(last_column), .last_row(last_row),
+                   .clk(clk), .rst(rst_sync));
 
-    charGen #(.FILENAME(FILENAME)) charGenerator (.pixel_out(pix_out), .char_addr(charAddr), .pixel_x(pix_x),
-                    .pixel_y(pix_y[8:0]), .char_value(charData[6:0]), .char_we(writeChar),
-                    .clk(clk));
+    assign new_frame = last_column & last_row;
 
+    // This is the character generator module. It takes the pix x and y values from the
+    // vga timing module and uses it to store character values at a certain address.
+    // It writes characters on the assertion of the writeChar signal
+    charGen #(.FILENAME(FILENAME)) charGenerator (.pixel_out(pix_out),
+              .char_addr(charAddr), .pixel_x(pix_x), .pixel_y(pix_y[8:0]),
+              .char_value(charData[6:0]), .char_we(writeChar), .clk(clk));
+
+    // This vgawrite module is used to interface with the charGen module above. It
+    // writes the plaintext, ciphertext, and key in real-time to the vga display
     write_vga vgaWrite(.write_char(writeChar), .char_data(charData),
                        .char_addr(charAddr), .key(keyCorrect), .plaintext(plainTxt),
                        .ciphertext(ciphTxt), .write_display(new_frame), .rst(rst_sync),
                        .clk(clk));
-
-    assign new_frame = last_column & last_row;
 
 
     /*****************************************************
@@ -188,7 +221,7 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
 
     // set RGB to BACKGROUND_COLOR if blank sig asserted. If not, set them to the 
     // background color unless the pix_out signal is asserted, then set them to
-    //  foreground color
+    // foreground color
     always_comb begin
         if (vga_blank) begin
             r = BACKGROUND_COLOR[11:8];
@@ -220,7 +253,7 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
         h_sync1 <= h_sync;
         h_sync2 <= h_sync1;
         Hsync <= h_sync2;
-        
+
         v_sync1 <= v_sync;
         v_sync2 <= v_sync1;
         Vsync <= v_sync2;

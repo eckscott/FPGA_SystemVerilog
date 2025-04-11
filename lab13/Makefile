@@ -8,13 +8,15 @@ sim_tb_codebreaker:
 	xelab tb_codebreaker -debug typical --nolog
 	xsim tb_codebreaker -log sim_chargen_tb.log -gui
 
-sim_chargen_top:
-	xvlog chargen_top.sv decrypt_rc4.sv font_rom.sv -sv --nolog
+sim_codebreaker_top:
+	xvlog codebreaker_top.sv decrypt_rc4.sv codebreaker.sv -sv --nolog
 	xvlog ../lab07/seven_segment4.sv -sv --nolog
 	xvlog ../lab08/vga_timing.sv -sv --nolog
 	xvlog ../lab09/debounce.sv -sv --nolog
 	xvlog ../lab11/rx.sv -sv --nolog
+	xvlog ../lab12/charGen.sv -sv --nolog
 	xelab --debug typical chargen_top --generic_top "WAIT_TIME_US=50" --nolog
+	xelab --debug typical chargen_top --generic_top "FILENAME=background.mem" --nolog
 	xsim chargen_top -gui -tclbatch sim_chargen_top.tcl --nolog
 
 background.mem:
