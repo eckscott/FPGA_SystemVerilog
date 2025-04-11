@@ -25,6 +25,10 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
     // horizontal sync, vertical sync, codebreaker error sig
     output logic Hsync, Vsync, error);
 
+    // constants for seven segment display
+    localparam DP_NONE = 4'b0000;
+    localparam SEV_SEG_BLANK = 4'b0000;
+
     // sync signals for rst btnd and switches
     logic rst_sync, rst_sync1; logic[2:0] sw_sync;
 
@@ -36,7 +40,7 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
     // register that stores ciphertext being decoded
     logic[127:0] ciphTxt = 128'ha13a3ab3071897088f3233a58d6238bb;
     // final key val outputted by codebreaker and plainTxt generated
-    logic[23:0] keyCorrect, logic[127:0] plainTxt;
+    logic[23:0] keyCorrect; logic[127:0] plainTxt;
     // done signal to indicate encryption/decryption process finished
     logic codeBreakDone;
 
@@ -51,7 +55,7 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
     // pixel x and y signals for vga timing module and charGen module
     logic[9:0] pix_x, pix_y;
     // Input signals for charGen module
-    logic[11:0] charAddr; logic[7:0] charData; logic writechar;
+    logic[11:0] charAddr; logic[7:0] charData; logic writeChar;
     // signals to indicate when there is a new frame
     logic new_frame, last_column, last_row;
 
@@ -91,7 +95,12 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
 
     // fill bottom byte of ciphTxt with output of UART receiver so that it can be filled
     // with 16 bytes from the UART Receiver
-    assign ciphTxt = {ciphTxt[119:0], rx_out};
+    always_ff @(posedge clk) begin
+        if (rst_sync)
+            ciphTxt <= 128'ha13a3ab3071897088f3233a58d6238bb;
+        else
+            ciphTxt <= {ciphTxt[119:0], rx_out};
+    end
 
     
     /*****************************************************
@@ -111,9 +120,10 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
                .debounced(start_db), .clk(clk), .rst(rst_sync), .noisy(start_sync));
 
     // edge detector to verify one button push counts as 1 and doesn't increment 4ever
-    always_ff @(posedge clk)
+    always_ff @(posedge clk) begin
         f1_db <= start_db;
         f2_db <= f1_db;
+    end
     assign start_edge = (f1_db & ~f2_db);
 
     // This codebreaker module takes a cipherTxt as an input and generates a plainTxt
@@ -145,7 +155,8 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
     // plain text on the seven segment display depending on which button is pushed
     seven_segment4 #(.CLK_FREQUENCY(CLK_FREQUENCY), .REFRESH_RATE(REFRESH_RATE))
                    sevenSegDisp(.segment(segment), .anode(anode), .data_in(sevenSegData),
-                                .blank(), .dp_in(), .rst(rst_sync), .clk(clk));
+                                .blank(SEV_SEG_BLANK), .dp_in(DP_NONE), .rst(rst_sync),
+                                .clk(clk));
 
     // block to decide what data to display on the seven segment display. If btnl is
     // pressed, display certain bits of the cipherTxt depending on the value of the
@@ -170,7 +181,7 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
                 3'b000: sevenSegData = plainTxt[15:0];
                 3'b001: sevenSegData = plainTxt[31:16];
                 3'b010: sevenSegData = plainTxt[47:32];
-                3'b011: sevenSegData = plainTxtt[63:48];
+                3'b011: sevenSegData = plainTxt[63:48];
                 3'b100: sevenSegData = plainTxt[79:64];
                 3'b101: sevenSegData = plainTxt[95:80];
                 3'b110: sevenSegData = plainTxt[111:96];

@@ -4,6 +4,7 @@
 **/*.jou
 **/*.txt
 !mymessage.txt
+!background.txt
 **/*.pb
 **/*.wdb
 **/*.dcp
