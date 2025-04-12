@@ -37,7 +37,7 @@ submit:
 	python3 lab13_passoff.py --submit
 
 download:
-	python3 ../resources/openocd.py chargen_top.bit
+	python3 ../resources/openocd.py codebreaker_top.bit
 
 clean:
 	rm -f *.bit *.jou *.charGent *.pb *.wdb *.dcp *.log *.rpt *.str *.mem

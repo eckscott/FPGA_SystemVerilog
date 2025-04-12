@@ -235,20 +235,20 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
     // foreground color
     always_comb begin
         if (vga_blank) begin
-            r = BACKGROUND_COLOR[11:8];
-            g = BACKGROUND_COLOR[7:4];
-            b = BACKGROUND_COLOR[3:0];
+            r = BACKGROUND_COLOR;
+            g = BACKGROUND_COLOR;
+            b = BACKGROUND_COLOR;
         end
         else
             if (pix_out) begin
-                r = FOREGROUND_COLOR[11:8];
-                g = FOREGROUND_COLOR[7:4];
-                b = FOREGROUND_COLOR[3:0];
+                r = FOREGROUND_COLOR;
+                g = FOREGROUND_COLOR;
+                b = FOREGROUND_COLOR;
             end
             else begin
-                r = BACKGROUND_COLOR[11:8];
-                g = BACKGROUND_COLOR[7:4];
-                b = BACKGROUND_COLOR[3:0];
+                r = BACKGROUND_COLOR;
+                g = BACKGROUND_COLOR;
+                b = BACKGROUND_COLOR;
             end
     end
 

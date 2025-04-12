@@ -77,6 +77,8 @@ module codebreaker (
         fail = 0;
         error = 0;
         done = 0;
+        ns = IDLE;
+        key = 0;
         if (reset)
             ns = IDLE;
         else begin
@@ -94,6 +96,7 @@ module codebreaker (
                 end 
                 // run decryption process. When finished, move to check state
                 DECRYPT: begin
+                    key = temp_key;
                     orig_cipher = bytes_in;
                     decrypt = 1;
                     fail = 0;
@@ -105,6 +108,7 @@ module codebreaker (
                 // inc and go back to decrypt state. If all key values tried, raise
                 // error sig and go to finish state
                 CHECK: begin
+                    key = temp_key;
                     decrypt = 0;
                     if (all_ascii) begin
                         done = 1;
