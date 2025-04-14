@@ -38,6 +38,8 @@ set_property PACKAGE_PIN U14 [get_ports {led[6]}]
 	set_property IOSTANDARD LVCMOS33 [get_ports {led[6]}]
 set_property PACKAGE_PIN V14 [get_ports {led[7]}]
 	set_property IOSTANDARD LVCMOS33 [get_ports {led[7]}]
+set_property PACKAGE_PIN L1 [get_ports {error}]
+	set_property IOSTANDARD LVCMOS33 [get_ports {error}]
 
 
 #7 segment display
