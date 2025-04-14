@@ -57,14 +57,15 @@ module codebreaker (
                         isAscii(bytes_out[119:112]) && isAscii(bytes_out[127:120]);
 
     // increment temp key everytime the previous key failed
-    always_ff @(posedge clk)
+    always_ff @(posedge clk) begin
         if (reset)
             temp_key <= 0;
         else
             if (done || error)
                 temp_key <= 0;
             else if (fail)
-                temp_key <= temp_key + 1; 
+                temp_key <= temp_key + 1;
+    end
     
     // state machine logic for cs
     always_ff @(posedge clk)
@@ -77,7 +78,6 @@ module codebreaker (
         fail = 0;
         error = 0;
         done = 0;
-        ns = IDLE;
         key = 0;
         if (reset)
             ns = IDLE;
