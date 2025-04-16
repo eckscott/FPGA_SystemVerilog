@@ -40,7 +40,7 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
     // register that stores ciphertext being decoded
     logic[127:0] ciphTxt = 128'ha13a3ab3071897088f3233a58d6238bb;
     // final key val outputted by codebreaker and plainTxt generated
-    logic[23:0] keyCorrect; logic[127:0] plainTxt;
+    logic[23:0] currKey; logic[127:0] plainTxt;
     // done signal to indicate encryption/decryption process finished
     logic codeBreakDone;
 
@@ -99,7 +99,8 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
         if (rst_sync)
             ciphTxt <= 128'ha13a3ab3071897088f3233a58d6238bb;
         else
-            ciphTxt <= {ciphTxt[119:0], rx_out};
+            if (ack)
+                ciphTxt <= {ciphTxt[119:0], rx_out};
     end
 
     
@@ -131,7 +132,7 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
     // 'codeBreakDone' once it finishes deciphering, or a signal 'error' if it couldn't
     // crack the code. Runs through this process on the raising of the start signal
     codebreaker codeBreak(.bytes_in(ciphTxt), .clk(clk), .reset(rst_sync),
-                          .start(start_edge), .bytes_out(plainTxt), .key(keyCorrect),
+                          .start(start_edge), .bytes_out(plainTxt), .key(currKey),
                           .done(codeBreakDone), .error(error));
 
 
@@ -189,11 +190,11 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
             endcase
         end 
         else
-            sevenSegData = keyCorrect[23:8];
+            sevenSegData = currKey[23:8];
     end
 
     // LED 0-7 displays the lower 8 bits of the key
-    assign led = keyCorrect[7:0];
+    assign led = currKey[7:0];
 
 
     /*****************************************************
@@ -220,7 +221,7 @@ module codebreaker_top #(FILENAME="", CLK_FREQUENCY=100_000_000, BAUD_RATE=19_20
     // This vgawrite module is used to interface with the charGen module above. It
     // writes the plaintext, ciphertext, and key in real-time to the vga display
     write_vga vgaWrite(.write_char(writeChar), .char_data(charData),
-                       .char_addr(charAddr), .key(keyCorrect), .plaintext(plainTxt),
+                       .char_addr(charAddr), .key(currKey), .plaintext(plainTxt),
                        .ciphertext(ciphTxt), .write_display(new_frame), .rst(rst_sync),
                        .clk(clk));
 
