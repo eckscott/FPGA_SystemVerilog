@@ -6,7 +6,7 @@ sim_decrypt_rc4:
 sim_tb_codebreaker:
 	xvlog decrypt_rc4.sv codebreaker.sv tb_codebreaker.sv -sv --nolog
 	xelab tb_codebreaker -debug typical --nolog
-	xsim tb_codebreaker -log sim_codebreaker_tb.log --runall
+	xsim tb_codebreaker -log sim_tb_codebreaker.log --runall
 
 sim_codebreaker_top:
 	xvlog codebreaker_top.sv decrypt_rc4.sv codebreaker.sv write_vga.sv -sv --nolog
@@ -17,7 +17,7 @@ sim_codebreaker_top:
 	xvlog ../lab12/charGen.sv ../lab12/font_rom.sv -sv --nolog
 	xelab --debug typical codebreaker_top --generic_top "WAIT_TIME_US=50" --nolog
 	xelab --debug typical codebreaker_top --generic_top "FILENAME=background.mem" --nolog
-	xsim codebreaker_top -tclbatch sim_codebreaker_top.tcl --nolog --runall
+	xsim codebreaker_top -tclbatch sim_codebreaker_top.tcl --runall
 
 background.mem:
 	python3 ../lab12/gen_initial_chars.py background.txt background.mem
