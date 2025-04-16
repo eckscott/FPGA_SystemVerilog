@@ -6,7 +6,7 @@ sim_decrypt_rc4:
 sim_tb_codebreaker:
 	xvlog decrypt_rc4.sv codebreaker.sv tb_codebreaker.sv -sv --nolog
 	xelab tb_codebreaker -debug typical --nolog
-	xsim tb_codebreaker -log sim_chargen_tb.log --runall
+	xsim tb_codebreaker -log sim_codebreaker_tb.log --runall
 
 sim_codebreaker_top:
 	xvlog codebreaker_top.sv decrypt_rc4.sv codebreaker.sv write_vga.sv -sv --nolog
